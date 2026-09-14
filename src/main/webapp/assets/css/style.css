@@ -182,11 +182,56 @@ h1, h2, h3, h4, .display-font {
   font-family: var(--font-serif); font-size: 1.4rem; font-weight: 700;
   letter-spacing: -0.5px; display: flex; align-items: center; gap: 8px;
 }
-.navbar-brand .dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; display: inline-block; flex-shrink:0; }
+.navbar-brand .dot {
+  width: 8px; height: 8px; background: var(--accent); border-radius: 50%; display: inline-block; flex-shrink:0;
+  animation: dotBreathe 2.6s ease-in-out infinite;
+}
+@keyframes dotBreathe { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: .65; } }
 .navbar-glass .navbar-brand { color: var(--ink) !important; transition: color var(--t); }
 .navbar-glass .navbar-brand:hover { color: var(--accent) !important; }
 .navbar-glass .navbar-brand:hover .dot { animation: navDotPulse .6s ease; }
 @keyframes navDotPulse { 0% { transform: scale(1); } 50% { transform: scale(1.6); } 100% { transform: scale(1); } }
+
+/* ---------- Animated brand wordmark: each letter of "RENTORA" is
+   split into its own span by JS (see main.js). Letters continuously
+   ripple in a wave, and a light shimmer sweeps across on a loop —
+   hover just intensifies the color/lift a touch. ---------- */
+.brand-text { display: inline-flex; position: relative; }
+.brand-letter {
+  display: inline-block;
+  animation: letterWave 2.2s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 90ms);
+  transition: color .3s ease;
+}
+@keyframes letterWave {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+.navbar-brand:hover .brand-letter { color: var(--accent); }
+/* Shimmer sweep across the wordmark, looping continuously */
+.brand-text::after {
+  content: ''; position: absolute; top: 0; bottom: 0; left: -30%; width: 30%;
+  background: linear-gradient(115deg, transparent, rgba(252,125,20,.55), transparent);
+  transform: skewX(-20deg); pointer-events: none;
+  animation: brandShimmer 3.2s ease-in-out infinite;
+}
+@keyframes brandShimmer { 0% { left: -30%; opacity: 0; } 15% { opacity: 1; } 45%,100% { left: 130%; opacity: 0; } }
+
+/* ---------- Eyebrow / section-tag badges: same continuous shimmer
+   sweep, looping on a slightly offset timer so the page doesn't feel
+   like everything blinks in sync. ---------- */
+.eyebrow { position: relative; overflow: hidden; transition: transform var(--t); }
+.eyebrow:hover { transform: translateY(-1px); }
+.eyebrow::after {
+  content: ''; position: absolute; top: 0; bottom: 0; left: -40%; width: 40%;
+  background: linear-gradient(115deg, transparent, rgba(255,255,255,.7), transparent);
+  transform: skewX(-20deg); pointer-events: none;
+  animation: brandShimmer 4s ease-in-out infinite 1.2s;
+}
+
+/* ---------- Stat numbers get a little pop when their count-up
+   animation (main.js) finishes scrolling into view. ---------- */
+.hero-stat-value, .hstat-num, .admin-stat-value { display: inline-block; }
 .navbar-glass .nav-link {
   font-size: .875rem; font-weight: 500; color: var(--ink3) !important;
   padding: 6px 14px !important; border-radius: var(--r); transition: all var(--t);
@@ -313,8 +358,12 @@ h1, h2, h3, h4, .display-font {
   width: 68px; height: 68px; border-radius: 50%; border: 2px solid var(--accent);
   display: flex; align-items: center; justify-content: center; margin: 0 auto 1.1rem;
   font-size: 1.5rem; color: var(--accent); transition: all var(--t);
+  animation: gentleBob 3.4s ease-in-out infinite;
 }
-.icon-feature:hover .icon-circle { background: var(--accent); color: #fff; transform: scale(1.06) rotate(-4deg); }
+.icon-feature:nth-of-type(2n) .icon-circle { animation-delay: .5s; }
+.icon-feature:nth-of-type(3n) .icon-circle { animation-delay: 1s; }
+@keyframes gentleBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+.icon-feature:hover .icon-circle { background: var(--accent); color: #fff; transform: scale(1.06) rotate(-4deg); animation-play-state: paused; }
 .icon-feature h5 { font-family: var(--font-serif); }
 .icon-feature p { color: var(--ink3); font-size: .92rem; max-width: 260px; margin: 0 auto; }
 
@@ -384,6 +433,7 @@ h1, h2, h3, h4, .display-font {
   width: 42px; height: 42px; border-radius: 50%; border: 2px solid var(--accent); background: var(--bg);
   color: var(--accent); font-family: var(--font-serif); font-weight: 700; font-size: 1rem;
   display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;
+  animation: gentleBob 3.4s ease-in-out infinite;
 }
 
 /* ---------- Testimonials / reviews ---------- */

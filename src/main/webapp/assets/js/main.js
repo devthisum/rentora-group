@@ -375,3 +375,62 @@ document.addEventListener('DOMContentLoaded', function () {
     // Close automatically after navigating (mobile) so it doesn't stay open on the next page.
     sidebar.querySelectorAll('a').forEach(link => link.addEventListener('click', closeSidebar));
 });
+
+// ==========================================================
+// RENTORA brand logo — splits "RENTORA" into per-letter spans
+// so CSS can wave/stagger them on hover (navbar + footer, every
+// page, no per-page markup needed).
+// ==========================================================
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.brand-text').forEach(function (el) {
+        const text = el.textContent;
+        el.textContent = '';
+        text.split('').forEach(function (ch, i) {
+            const span = document.createElement('span');
+            span.className = 'brand-letter';
+            span.style.setProperty('--i', i);
+            span.textContent = ch;
+            el.appendChild(span);
+        });
+    });
+});
+
+// ==========================================================
+// Animated stat counters — any element with [data-count-to]
+// counts up from 0 once it scrolls into view (hero stats,
+// admin dashboard stat cards). Non-numeric text is left alone.
+// ==========================================================
+document.addEventListener('DOMContentLoaded', function () {
+    const counters = document.querySelectorAll('.hero-stat-value, .hstat-num, .admin-stat-value');
+    if (!counters.length) return;
+
+    function animateCounter(el) {
+        const raw = el.textContent.trim();
+        const match = raw.match(/^([^\d]*)(\d[\d,]*)(.*)$/);
+        if (!match) return; // no digits to animate (e.g. plain text like "24/7")
+        const [, prefix, numStr, suffix] = match;
+        const target = parseInt(numStr.replace(/,/g, ''), 10);
+        if (isNaN(target)) return;
+        const duration = 1100;
+        const start = performance.now();
+        function tick(now) {
+            const progress = Math.min((now - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const current = Math.round(target * eased);
+            el.textContent = prefix + current.toLocaleString() + suffix;
+            if (progress < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+    }
+
+    const io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+                animateCounter(entry.target);
+                io.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.4 });
+
+    counters.forEach(function (el) { io.observe(el); });
+});

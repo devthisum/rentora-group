@@ -6,7 +6,7 @@
     <div class="row g-4 pb-4">
       <div class="col-lg-4">
         <a class="navbar-brand mb-3 d-inline-flex" href="${pageContext.request.contextPath}/" style="color:#fff !important;">
-          <span class="dot"></span>RENTORA
+          <span class="dot"></span><span class="brand-text">RENTORA</span>
         </a>
         <p style="font-size:0.9rem;max-width:320px;">Vehicle rentals for every journey — browse our stock and book your ride in minutes.</p>
         <div class="d-flex gap-2 mt-3">

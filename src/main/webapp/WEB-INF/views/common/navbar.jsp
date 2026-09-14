@@ -5,22 +5,22 @@
     <c:choose>
       <c:when test="${sessionScope.user.roleName == 'ADMIN'}">
         <a class="navbar-brand" href="${pageContext.request.contextPath}/admin/dashboard">
-          <span class="dot"></span>RENTORA
+          <span class="dot"></span><span class="brand-text">RENTORA</span>
         </a>
       </c:when>
       <c:when test="${sessionScope.user.roleName == 'MAINTENANCE'}">
         <a class="navbar-brand" href="${pageContext.request.contextPath}/maintenance/dashboard">
-          <span class="dot"></span>RENTORA
+          <span class="dot"></span><span class="brand-text">RENTORA</span>
         </a>
       </c:when>
       <c:when test="${sessionScope.user.roleName == 'BOOKING'}">
         <a class="navbar-brand" href="${pageContext.request.contextPath}/booking/dashboard">
-          <span class="dot"></span>RENTORA
+          <span class="dot"></span><span class="brand-text">RENTORA</span>
         </a>
       </c:when>
       <c:otherwise>
         <a class="navbar-brand" href="${pageContext.request.contextPath}/">
-          <span class="dot"></span>RENTORA
+          <span class="dot"></span><span class="brand-text">RENTORA</span>
         </a>
       </c:otherwise>
     </c:choose>
