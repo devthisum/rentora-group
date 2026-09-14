@@ -1217,3 +1217,113 @@ footer.footer-glass strong { color: #fff; }
   .admin-sidebar.open { transform: translateX(0); box-shadow: var(--shadow-xl); }
   .admin-sidebar-toggle { display: flex; }
 }
+
+/* ════════════════════════════════════════════════════════════
+   SITE-WIDE FINAL POLISH PASS — glass, hover & motion for every
+   remaining raw Bootstrap element (modals, pagination, alerts,
+   list-groups, icon buttons) plus tactile feedback everywhere.
+   ════════════════════════════════════════════════════════════ */
+
+/* ---------- Accessible focus ring, used instead of the default
+   browser outline so keyboard nav still looks intentional. ---------- */
+a:focus-visible, button:focus-visible, .btn:focus-visible,
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px;
+}
+
+/* ---------- Tactile press feedback on every button ---------- */
+.btn, button { transition: transform var(--t), background var(--t), color var(--t), border-color var(--t), box-shadow var(--t); }
+.btn:active, button:active { transform: scale(.97); }
+
+/* ---------- Danger / icon-only buttons (delete, remove, etc.) ---------- */
+.btn.text-danger:hover, .btn-outline-danger:hover, .btn-danger {
+  background: rgba(224,40,40,.12) !important; color: var(--red) !important;
+  border-color: rgba(224,40,40,.35) !important;
+}
+.btn-danger { background: var(--red); color: #fff !important; border: none; }
+.btn-danger:hover { background: #c22222; box-shadow: 0 4px 14px rgba(224,40,40,.35); transform: translateY(-1px); }
+.btn-sm.text-danger i, .btn-sm.btn-outline-danger i { transition: transform var(--t); }
+.btn-sm.text-danger:hover i, .btn-sm.btn-outline-danger:hover i { transform: scale(1.12) rotate(-4deg); }
+
+/* ---------- Modals: glass surface that follows light/dark theme ---------- */
+.modal-content {
+  background: rgba(255,255,255,.88);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(15,23,42,.12);
+  border-radius: var(--r2);
+  box-shadow: var(--shadow-xl);
+  color: var(--ink);
+}
+[data-theme="dark"] .modal-content {
+  background: rgba(15,17,23,.88);
+  border: 1px solid rgba(255,255,255,.14);
+}
+.modal-header, .modal-footer { border-color: var(--line2); }
+.modal-title { font-family: var(--font-serif); }
+.modal-backdrop.show { opacity: .55; -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); }
+.btn-close { transition: transform var(--t), opacity var(--t); }
+.btn-close:hover { transform: rotate(90deg); }
+[data-theme="dark"] .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
+
+/* ---------- Alerts: complete the set (info was missing) ---------- */
+.alert-info { background: rgba(26,86,219,.08); border: 1px solid rgba(26,86,219,.3); color: #1a56db; border-radius: var(--r); }
+.alert-warning { background: var(--amber-l); border: 1px solid rgba(217,119,6,.3); color: var(--amber); border-radius: var(--r); }
+.alert { animation: fadeInUp .35s ease both; }
+
+/* ---------- Pagination ---------- */
+.pagination { gap: 4px; }
+.page-link {
+  border: 1.5px solid var(--line); color: var(--ink3); font-weight: 600; font-size: .85rem;
+  border-radius: var(--r) !important; margin: 0 !important; background: var(--bg);
+  transition: all var(--t);
+}
+.page-link:hover { background: var(--accent-l); color: var(--accent); border-color: var(--accent); z-index: 1; }
+.page-item.active .page-link { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: var(--shadow); }
+.page-item.disabled .page-link { opacity: .45; }
+
+/* ---------- List groups ---------- */
+.list-group-item {
+  background: transparent; border-color: var(--line2); color: var(--ink);
+  transition: all var(--t);
+}
+.list-group-item-action:hover { background: var(--bg2); }
+a.list-group-item:hover, a.list-group-item:focus { color: var(--accent); }
+
+/* ---------- Tooltips & popovers ---------- */
+.tooltip .tooltip-inner { background: var(--ink); color: var(--bg); font-size: .78rem; border-radius: var(--r); padding: 6px 12px; }
+.popover { border: 1px solid var(--line); border-radius: var(--r2); box-shadow: var(--shadow-xl); }
+
+/* ---------- Plain Bootstrap .card fallback (pages that haven't
+   opted into .glass-card / .admin-*-card get the same treatment) ---------- */
+.card:not(.glass-card):not(.vehicle-card):not(.admin-stat-card):not(.admin-chart-card):not(.admin-table-card) {
+  background: var(--bg); border: 1px solid var(--line2); border-radius: var(--r2);
+  box-shadow: var(--shadow-sm); transition: all var(--t);
+}
+.card:not(.glass-card):not(.vehicle-card):not(.admin-stat-card):not(.admin-chart-card):not(.admin-table-card):hover {
+  box-shadow: var(--shadow-lg); transform: translateY(-2px);
+}
+
+/* ---------- Generic clickable rows / table rows everywhere ---------- */
+tbody tr { transition: background var(--t); }
+
+/* ---------- Badges: gentle hover for badges that sit on links/buttons ---------- */
+a .badge, button .badge { transition: transform var(--t); }
+a:hover .badge, button:hover .badge { transform: scale(1.05); }
+
+/* ---------- Section-level entrance: any element opted into
+   [data-aos] already animates via AOS; give plain content sections
+   inside dashboards a subtle fade too, without needing the library. ---------- */
+.admin-stat-card, .admin-chart-card, .admin-table-card, .glass-card, .vehicle-card, .feature-card, .step-card, .testimonial-card, .review-card {
+  animation: cardIn .45s cubic-bezier(.4,0,.2,1) both;
+}
+
+/* ---------- Links inside body copy get an animated underline
+   instead of the default (keeps the "a { text-decoration:none }"
+   reset from earlier in this file feeling intentional, not broken). ---------- */
+.prose a, .inquiry-body a, .announcement-body a {
+  color: var(--accent); background-image: linear-gradient(var(--accent), var(--accent));
+  background-size: 0% 1.5px; background-repeat: no-repeat; background-position: 0 100%;
+  transition: background-size var(--t);
+}
+.prose a:hover, .inquiry-body a:hover, .announcement-body a:hover { background-size: 100% 1.5px; }
