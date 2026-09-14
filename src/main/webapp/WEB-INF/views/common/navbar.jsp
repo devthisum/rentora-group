@@ -2,9 +2,28 @@
 <%@ taglib uri="jakarta.tags.functions" prefix="fn" %>
 <nav class="navbar navbar-expand-lg navbar-glass" id="mainNav">
   <div class="container">
-    <a class="navbar-brand" href="${pageContext.request.contextPath}/">
-      <span class="dot"></span>RENTORA
-    </a>
+    <c:choose>
+      <c:when test="${sessionScope.user.roleName == 'ADMIN'}">
+        <a class="navbar-brand" href="${pageContext.request.contextPath}/admin/dashboard">
+          <span class="dot"></span>RENTORA
+        </a>
+      </c:when>
+      <c:when test="${sessionScope.user.roleName == 'MAINTENANCE'}">
+        <a class="navbar-brand" href="${pageContext.request.contextPath}/maintenance/dashboard">
+          <span class="dot"></span>RENTORA
+        </a>
+      </c:when>
+      <c:when test="${sessionScope.user.roleName == 'BOOKING'}">
+        <a class="navbar-brand" href="${pageContext.request.contextPath}/booking/dashboard">
+          <span class="dot"></span>RENTORA
+        </a>
+      </c:when>
+      <c:otherwise>
+        <a class="navbar-brand" href="${pageContext.request.contextPath}/">
+          <span class="dot"></span>RENTORA
+        </a>
+      </c:otherwise>
+    </c:choose>
 
     <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
       <i class="fa-solid fa-bars fs-4" style="color:var(--accent)"></i>

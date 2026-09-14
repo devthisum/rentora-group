@@ -33,7 +33,11 @@ public class LoginServlet extends HttpServlet {
             session.setAttribute("user", user);
             session.setMaxInactiveInterval(30 * 60); // 30 minutes
 
-            resp.sendRedirect(req.getContextPath() + "/");
+            if ("ADMIN".equalsIgnoreCase(user.getRoleName())) {
+                resp.sendRedirect(req.getContextPath() + "/admin/dashboard");
+            } else {
+                resp.sendRedirect(req.getContextPath() + "/");
+            }
         } catch (AuthenticationException ae) {
             req.setAttribute("errorMessage", ae.getMessage());
             req.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(req, resp);

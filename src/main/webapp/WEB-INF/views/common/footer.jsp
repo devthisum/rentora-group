@@ -1,3 +1,6 @@
+<%@ taglib uri="jakarta.tags.core" prefix="c" %>
+
+<c:if test="${sessionScope.user.roleName != 'ADMIN' && sessionScope.user.roleName != 'MAINTENANCE' && sessionScope.user.roleName != 'BOOKING'}">
 <footer class="footer-glass pb-4">
   <div class="container">
     <div class="row g-4 pb-4">
@@ -52,6 +55,7 @@
 
 <a href="https://wa.me/94761234567" target="_blank" class="whatsapp-float"><i class="fa-brands fa-whatsapp"></i></a>
 <button type="button" class="back-to-top" id="backToTop"><i class="fa-solid fa-arrow-up"></i></button>
+</c:if>
 
 <!-- Bootstrap Bundle (incl. Popper) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
