@@ -82,11 +82,6 @@ These modules follow the exact same MVC/DAO/Service pattern already established 
 
 See the architecture document delivered earlier for the full folder layout, sprint plan, and UML diagram list. The structure on disk in this package mirrors it exactly.
 
-## 8. Default Login (after you set the admin password hash)
 
-```
-Email: admin@rentora.com
-Role: ADMIN
-```
 
 Register new Renter/Owner accounts via `/register`. Owner accounts require admin approval (status `PENDING` → `ACTIVE`) before they can log in.
