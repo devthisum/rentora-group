@@ -16,7 +16,7 @@
 
     <div class="auth-right">
       <div class="auth-right-inner" data-aos="fade-left">
-        <a href="${pageContext.request.contextPath}/" class="navbar-brand mb-4 d-inline-flex"><span class="dot"></span>RENTORA</a>
+        <a href="${pageContext.request.contextPath}/" class="navbar-brand mb-4 d-inline-flex"><span class="dot"></span><span class="brand-text">RENTORA</span></a>
 
         <h3 class="mb-1 fw-bold" style="font-family:var(--font-serif);">Create Your Account</h3>
         <p class="text-soft mb-4">Join Rentora to browse and book vehicles</p>

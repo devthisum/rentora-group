@@ -392,3 +392,17 @@ INSERT INTO vehicles (category_id, vehicle_number, brand, model, year, seats, tr
 ((SELECT category_id FROM vehicle_categories WHERE category_name = 'Electric Vehicle'), 'EV-3001', 'Tesla', 'Model 3', 2023, 5, 'AUTOMATIC', 'ELECTRIC', 26000.00, 'Zero emissions with instant torque — Autopilot-equipped for a genuinely futuristic drive.', 'https://images.unsplash.com/photo-1685270386994-ae66d13d021e?q=80&w=900&auto=format&fit=crop', 'AVAILABLE', 4, 'YES', 15000, 'Autopilot,Reverse Camera,Fast Charging,Air Conditioner'),
 ((SELECT category_id FROM vehicle_categories WHERE category_name = 'Electric Vehicle'), 'EV-3002', 'Nissan', 'Leaf', 2021, 5, 'AUTOMATIC', 'ELECTRIC', 12000.00, 'The world''s best-selling EV — practical, quiet, and cheap to run around town.', 'https://images.unsplash.com/photo-1745966325233-52c7ae2656fa?q=80&w=900&auto=format&fit=crop', 'AVAILABLE', 4, 'YES', 28000, 'Reverse Camera,Fast Charging,Air Conditioner'),
 ((SELECT category_id FROM vehicle_categories WHERE category_name = 'Electric Vehicle'), 'EV-3003', 'BYD', 'Atto 3', 2022, 5, 'AUTOMATIC', 'ELECTRIC', 15000.00, 'Long range and a spacious, tech-forward interior — great value for an electric SUV-crossover.', 'https://images.unsplash.com/photo-1745966325233-52c7ae2656fa?q=80&w=700&auto=format&fit=crop', 'AVAILABLE', 4, 'YES', 11000, 'Reverse Camera,Fast Charging,Sunroof,Air Conditioner');
+
+-- ------------------------------------------------------------
+-- PASSWORD RESET OTPs (forgot-password flow)
+-- ------------------------------------------------------------
+CREATE TABLE password_reset_otps (
+    otp_id      BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id     BIGINT NOT NULL,
+    otp_code    VARCHAR(6) NOT NULL,
+    expires_at  TIMESTAMP NOT NULL,
+    used        BOOLEAN DEFAULT FALSE,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    INDEX idx_otp_user_code (user_id, otp_code)
+);

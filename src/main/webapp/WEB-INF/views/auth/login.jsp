@@ -16,7 +16,7 @@
 
     <div class="auth-right">
       <div class="auth-right-inner" data-aos="fade-left">
-        <a href="${pageContext.request.contextPath}/" class="navbar-brand mb-4 d-inline-flex"><span class="dot"></span>RENTORA</a>
+        <a href="${pageContext.request.contextPath}/" class="navbar-brand mb-4 d-inline-flex"><span class="dot"></span><span class="brand-text">RENTORA</span></a>
 
         <h3 class="mb-1 fw-bold" style="font-family:var(--font-serif);">Welcome Back</h3>
         <p class="text-soft mb-4">Log in to your Rentora account</p>
@@ -32,6 +32,9 @@
           <div class="mb-4">
             <label class="form-label small">Password</label>
             <input type="password" name="password" class="form-control form-control-glass" required>
+            <div class="text-end mt-2">
+              <a href="${pageContext.request.contextPath}/forgot-password" class="small" style="color:var(--accent); font-weight:600;">Forgot password?</a>
+            </div>
           </div>
           <button type="submit" class="btn btn-gradient w-100 py-2">Log In</button>
         </form>
