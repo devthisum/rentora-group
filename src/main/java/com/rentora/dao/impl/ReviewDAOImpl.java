@@ -48,6 +48,15 @@ public class ReviewDAOImpl implements ReviewDAO {
     }
 
     @Override
+    public boolean delete(long reviewId) throws Exception {
+        try (Connection conn = connectionManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement("DELETE FROM reviews WHERE review_id = ?")) {
+            ps.setLong(1, reviewId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    @Override
     public List<Review> findByVehicle(long vehicleId) throws Exception {
         List<Review> list = new ArrayList<>();
         try (Connection conn = connectionManager.getConnection();

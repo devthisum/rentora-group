@@ -12,6 +12,7 @@
     <c:if test="${not empty errorMessage}"><div class="alert alert-danger">${errorMessage}</div></c:if>
     <c:if test="${not empty param.reviewed}"><div class="alert alert-success">Thanks — your review has been submitted!</div></c:if>
     <c:if test="${not empty param.reviewUpdated}"><div class="alert alert-success">Your review has been updated.</div></c:if>
+    <c:if test="${not empty param.reviewDeleted}"><div class="alert alert-success">Your review has been deleted.</div></c:if>
     <c:if test="${not empty param.error}"><div class="alert alert-danger">${param.error}</div></c:if>
     <c:if test="${not empty sessionScope.successMessage}">
       <div class="alert alert-success">${sessionScope.successMessage}</div>
@@ -143,6 +144,14 @@
                   <div class="modal-footer">
                     <button type="submit" class="btn btn-gradient">Save Changes</button>
                   </div>
+                </form>
+                <form method="post" action="${pageContext.request.contextPath}/renter/review"
+                      onsubmit="return confirm('Delete this review? This can\'t be undone.');" class="px-3 pb-3">
+                  <input type="hidden" name="action" value="delete">
+                  <input type="hidden" name="reviewId" value="${existingReview.reviewId}">
+                  <button type="submit" class="btn btn-sm btn-outline-glass text-danger w-100">
+                    <i class="fa-solid fa-trash me-1"></i>Delete Review
+                  </button>
                 </form>
               </div>
             </div>

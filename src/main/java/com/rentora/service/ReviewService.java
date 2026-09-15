@@ -76,4 +76,18 @@ public class ReviewService {
         double newAverage = reviewDAO.getAverageRatingForVehicle(review.getVehicleId());
         vehicleDAO.updateAverageRating(review.getVehicleId(), newAverage);
     }
+
+    /** A renter can remove their own review at any time. Recalculates the vehicle's average rating afterward. */
+    public void deleteReview(long reviewId, long renterId) throws Exception {
+        Review review = reviewDAO.findById(reviewId)
+                .orElseThrow(() -> new ValidationException("Review not found."));
+        if (review.getRenterId() != renterId) {
+            throw new ValidationException("You can only delete your own reviews.");
+        }
+        reviewDAO.delete(reviewId);
+
+        // Recalculate — getAverageRatingForVehicle already returns 0.0 if no reviews remain.
+        double newAverage = reviewDAO.getAverageRatingForVehicle(review.getVehicleId());
+        vehicleDAO.updateAverageRating(review.getVehicleId(), newAverage);
+    }
 }

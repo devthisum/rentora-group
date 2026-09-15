@@ -20,8 +20,15 @@ public class SubmitReviewServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         HttpSession session = req.getSession(false);
         User renter = (User) session.getAttribute("user");
-        String action = req.getParameter("action"); // "edit" or absent (= submit new)
+        String action = req.getParameter("action"); // "edit", "delete", or absent (= submit new)
         try {
+            if ("delete".equals(action)) {
+                long reviewId = Long.parseLong(req.getParameter("reviewId"));
+                reviewService.deleteReview(reviewId, renter.getUserId());
+                resp.sendRedirect(req.getContextPath() + "/renter/dashboard?reviewDeleted=1");
+                return;
+            }
+
             int rating = Integer.parseInt(req.getParameter("rating"));
             String comment = req.getParameter("comment");
 
