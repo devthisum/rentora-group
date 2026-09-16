@@ -153,7 +153,18 @@
     <!-- ============ RIGHT: BOOKING BOX ============ -->
     <div>
       <div class="glass-card p-4" id="booking-box" data-aos="fade-up" style="position:sticky; top:6.5rem; scroll-margin-top:6.5rem;">
-        <h4 class="fw-bold mb-1">Rs. ${vehicle.pricePerDay} <span class="text-secondary fs-6">/ day</span></h4>
+        <c:choose>
+          <c:when test="${vehicle.hasPromotion}">
+            <div class="badge badge-active text-uppercase mb-2 d-inline-block"><i class="fa-solid fa-tag me-1"></i>${vehicle.promotionTitle}</div>
+            <h4 class="fw-bold mb-1">
+              Rs. ${vehicle.discountedPrice} <span class="text-secondary fs-6">/ day</span>
+              <span class="text-secondary fs-6" style="text-decoration:line-through; opacity:.6;">Rs. ${vehicle.pricePerDay}</span>
+            </h4>
+          </c:when>
+          <c:otherwise>
+            <h4 class="fw-bold mb-1">Rs. ${vehicle.pricePerDay} <span class="text-secondary fs-6">/ day</span></h4>
+          </c:otherwise>
+        </c:choose>
 
         <div class="details-trust-badges mb-3">
           <span><i class="fa-solid fa-shield-halved"></i>Fully Insured</span>
@@ -174,7 +185,7 @@
           </c:when>
           <c:when test="${not empty sessionScope.user && sessionScope.user.roleName == 'RENTER'}">
             <form method="post" action="${pageContext.request.contextPath}/renter/book" id="booking-form"
-                  data-price-per-day="${vehicle.pricePerDay}" data-vehicle-id="${vehicle.vehicleId}">
+                  data-price-per-day="${vehicle.hasPromotion ? vehicle.discountedPrice : vehicle.pricePerDay}" data-vehicle-id="${vehicle.vehicleId}">
               <input type="hidden" name="vehicleId" value="${vehicle.vehicleId}">
               <input type="hidden" id="startDate" name="startDate" required>
               <input type="hidden" id="endDate" name="endDate" required>
@@ -228,7 +239,15 @@
                   <i class="fa-solid fa-star${s <= rv.averageRating ? '' : ' dim'}"></i>
                 </c:forEach>
               </div>
-              <div class="price-pill"><span class="amount">Rs. ${rv.pricePerDay}</span><span class="unit">per day</span></div>
+              <c:choose>
+                <c:when test="${rv.hasPromotion}">
+                  <div class="price-pill"><span class="amount">Rs. ${rv.discountedPrice}</span><span class="unit">per day</span></div>
+                  <div class="badge badge-active text-uppercase mt-1" style="font-size:.65rem;"><i class="fa-solid fa-tag me-1"></i>Deal</div>
+                </c:when>
+                <c:otherwise>
+                  <div class="price-pill"><span class="amount">Rs. ${rv.pricePerDay}</span><span class="unit">per day</span></div>
+                </c:otherwise>
+              </c:choose>
             </div>
           </a>
         </c:forEach>

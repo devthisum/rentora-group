@@ -2,6 +2,7 @@ package com.rentora.controller.renter;
 
 import com.rentora.model.User;
 import com.rentora.model.Vehicle;
+import com.rentora.service.PromotionService;
 import com.rentora.service.VehicleService;
 import com.rentora.service.WishlistService;
 import jakarta.servlet.ServletException;
@@ -24,6 +25,7 @@ public class VehicleSearchServlet extends HttpServlet {
 
     private final VehicleService vehicleService = new VehicleService();
     private final WishlistService wishlistService = new WishlistService();
+    private final PromotionService promotionService = new PromotionService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -37,8 +39,10 @@ public class VehicleSearchServlet extends HttpServlet {
 
         try {
             List<Vehicle> results = vehicleService.search(filters);
+            promotionService.applyActivePromotions(results);
             req.setAttribute("vehicles", results);
         } catch (Exception e) {
+            e.printStackTrace();
             req.setAttribute("errorMessage", "Unable to load vehicles right now.");
         }
 

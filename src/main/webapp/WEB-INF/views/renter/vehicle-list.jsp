@@ -97,7 +97,9 @@
               <div class="fleet-row-info">
                 <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
                   <div>
-                    <h4 class="fleet-row-title">${v.brand} ${v.model}</h4>
+                    <h4 class="fleet-row-title">${v.brand} ${v.model}
+                      <c:if test="${v.hasPromotion}"><span class="badge badge-active text-uppercase ms-1" style="font-size:.62rem; vertical-align:middle;"><i class="fa-solid fa-tag me-1"></i>${v.promotionTitle}</span></c:if>
+                    </h4>
                     <div class="rating-stars mt-1">
                       <c:forEach begin="1" end="5" var="s">
                         <i class="fa-solid fa-star${s <= v.averageRating ? '' : ' dim'}"></i>
@@ -105,7 +107,17 @@
                       <span class="text-soft" style="font-size:.72rem;margin-left:3px;">(${v.averageRating})</span>
                     </div>
                   </div>
-                  <div class="vehicle-card-v2-price fs-5">Rs. ${v.pricePerDay}<small>per day</small></div>
+                  <c:choose>
+                    <c:when test="${v.hasPromotion}">
+                      <div class="vehicle-card-v2-price fs-5">
+                        Rs. ${v.discountedPrice}<small>per day</small>
+                        <div class="text-secondary" style="text-decoration:line-through; opacity:.6; font-size:.75rem; font-weight:400;">Rs. ${v.pricePerDay}</div>
+                      </div>
+                    </c:when>
+                    <c:otherwise>
+                      <div class="vehicle-card-v2-price fs-5">Rs. ${v.pricePerDay}<small>per day</small></div>
+                    </c:otherwise>
+                  </c:choose>
                 </div>
                 <div class="fleet-row-specs">
                   <span><i class="fa-solid fa-gear"></i>${v.transmission}</span>

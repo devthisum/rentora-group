@@ -11,6 +11,7 @@ import com.rentora.model.Vehicle;
 import com.rentora.observer.NotificationSubject;
 import com.rentora.strategy.PaymentStrategy;
 import com.rentora.util.ValidationUtil;
+import com.rentora.service.PromotionService;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -27,6 +28,7 @@ public class BookingService {
 
     private final BookingDAO bookingDAO = new BookingDAOImpl();
     private final VehicleDAO vehicleDAO = new VehicleDAOImpl();
+    private final PromotionService promotionService = new PromotionService();
     private final NotificationSubject notificationSubject;
 
     public BookingService(NotificationSubject notificationSubject) {
@@ -58,7 +60,10 @@ public class BookingService {
         }
 
         long days = ChronoUnit.DAYS.between(startDate, endDate) + 1;
-        BigDecimal total = paymentStrategy.calculateTotal(vehicle.getPricePerDay(), days);
+        // Uses the discounted price if an active staff promotion applies to this
+        // vehicle right now — the discount is real money off, not just a UI badge.
+        BigDecimal effectivePricePerDay = promotionService.getEffectivePricePerDay(vehicle);
+        BigDecimal total = paymentStrategy.calculateTotal(effectivePricePerDay, days);
 
         Booking booking = new Booking();
         booking.setRenterId(renterId);

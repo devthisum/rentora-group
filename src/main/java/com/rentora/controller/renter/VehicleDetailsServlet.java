@@ -2,6 +2,7 @@ package com.rentora.controller.renter;
 
 import com.rentora.model.User;
 import com.rentora.model.Vehicle;
+import com.rentora.service.PromotionService;
 import com.rentora.service.ReviewService;
 import com.rentora.service.VehicleImageService;
 import com.rentora.service.VehicleService;
@@ -25,6 +26,7 @@ public class VehicleDetailsServlet extends HttpServlet {
     private final VehicleImageService vehicleImageService = new VehicleImageService();
     private final ReviewService reviewService = new ReviewService();
     private final WishlistService wishlistService = new WishlistService();
+    private final PromotionService promotionService = new PromotionService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -36,11 +38,15 @@ public class VehicleDetailsServlet extends HttpServlet {
                 return;
             }
             req.setAttribute("vehicle", vehicle.get());
+            promotionService.applyActivePromotion(vehicle.get());
             req.setAttribute("galleryImages", vehicleImageService.getGallery(id));
             req.setAttribute("reviews", reviewService.getByVehicle(id));
             req.setAttribute("isFavorited", isFavorited(req, id));
-            req.setAttribute("relatedVehicles", getRelatedVehicles(vehicle.get()));
+            List<Vehicle> related = getRelatedVehicles(vehicle.get());
+            promotionService.applyActivePromotions(related);
+            req.setAttribute("relatedVehicles", related);
         } catch (Exception e) {
+            e.printStackTrace();
             req.setAttribute("errorMessage", "Unable to load this vehicle.");
         }
         req.getRequestDispatcher("/WEB-INF/views/renter/vehicle-details.jsp").forward(req, resp);

@@ -20,6 +20,10 @@
            class="admin-sidebar-link ${fn:contains(pageContext.request.requestURI, '/admin/vehicles') ? 'active' : ''}">
           <i class="fa-solid fa-car"></i><span>Vehicles</span>
         </a>
+        <a href="${pageContext.request.contextPath}/admin/promotions"
+           class="admin-sidebar-link ${fn:contains(pageContext.request.requestURI, '/admin/promotions') ? 'active' : ''}">
+          <i class="fa-solid fa-tag"></i><span>Promotions</span>
+        </a>
         <a href="${pageContext.request.contextPath}/maintenance/dashboard"
            class="admin-sidebar-link ${fn:contains(pageContext.request.requestURI, '/maintenance/') ? 'active' : ''}">
           <i class="fa-solid fa-screwdriver-wrench"></i><span>Maintenance</span>
@@ -51,8 +55,13 @@
 
       <c:if test="${sessionScope.user.roleName == 'BOOKING'}">
         <div class="admin-sidebar-label">Booking Staff</div>
-        <a href="${pageContext.request.contextPath}/booking/dashboard" class="admin-sidebar-link active">
+        <a href="${pageContext.request.contextPath}/booking/dashboard"
+           class="admin-sidebar-link ${fn:contains(pageContext.request.requestURI, '/booking/dashboard') ? 'active' : ''}">
           <i class="fa-solid fa-key"></i><span>Booking Desk</span>
+        </a>
+        <a href="${pageContext.request.contextPath}/booking/promotions"
+           class="admin-sidebar-link ${fn:contains(pageContext.request.requestURI, '/booking/promotions') ? 'active' : ''}">
+          <i class="fa-solid fa-tag"></i><span>Promotions</span>
         </a>
       </c:if>
 

@@ -80,6 +80,20 @@ public class Vehicle {
     public double getAverageRating() { return averageRating; }
     public void setAverageRating(double averageRating) { this.averageRating = averageRating; }
 
+    // ---- Promotion display fields (stamped on by PromotionService, not stored on this table) ----
+    private boolean hasPromotion;
+    private String promotionTitle;
+    private java.math.BigDecimal discountedPrice;
+
+    public boolean isHasPromotion() { return hasPromotion; }
+    public void setHasPromotion(boolean hasPromotion) { this.hasPromotion = hasPromotion; }
+
+    public String getPromotionTitle() { return promotionTitle; }
+    public void setPromotionTitle(String promotionTitle) { this.promotionTitle = promotionTitle; }
+
+    public java.math.BigDecimal getDiscountedPrice() { return discountedPrice; }
+    public void setDiscountedPrice(java.math.BigDecimal discountedPrice) { this.discountedPrice = discountedPrice; }
+
     public List<String> getImageUrls() { return imageUrls; }
     public void setImageUrls(List<String> imageUrls) { this.imageUrls = imageUrls; }
 

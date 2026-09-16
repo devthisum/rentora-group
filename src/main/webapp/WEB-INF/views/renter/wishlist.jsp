@@ -64,8 +64,18 @@
               <div class="p-3">
                 <div class="d-flex justify-content-between align-items-start mb-1">
                   <h5 class="mb-0">${v.brand} ${v.model}</h5>
-                  <span class="price-tag">Rs. ${v.pricePerDay}/day</span>
+                  <c:choose>
+                    <c:when test="${v.hasPromotion}">
+                      <span class="price-tag">Rs. ${v.discountedPrice}/day <span style="text-decoration:line-through; opacity:.6; font-weight:400;">Rs. ${v.pricePerDay}</span></span>
+                    </c:when>
+                    <c:otherwise>
+                      <span class="price-tag">Rs. ${v.pricePerDay}/day</span>
+                    </c:otherwise>
+                  </c:choose>
                 </div>
+                <c:if test="${v.hasPromotion}">
+                  <span class="badge badge-active text-uppercase mb-2 d-inline-block"><i class="fa-solid fa-tag me-1"></i>${v.promotionTitle}</span>
+                </c:if>
                 <p class="text-secondary small mb-2">${v.categoryName} &nbsp;|&nbsp; ${v.seats} seats</p>
                 <div class="d-flex justify-content-between align-items-center">
                   <span><i class="fa-solid fa-star text-warning me-1"></i>${v.averageRating}</span>
