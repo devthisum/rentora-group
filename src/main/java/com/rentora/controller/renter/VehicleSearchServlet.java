@@ -46,6 +46,7 @@ public class VehicleSearchServlet extends HttpServlet {
                         .sorted(java.util.Comparator.comparingInt(Vehicle::getDiscountPercent).reversed())
                         .collect(java.util.stream.Collectors.toList());
             }
+            results = sorted(results, req.getParameter("sort"));
             req.setAttribute("vehicles", results);
         } catch (Exception e) {
             e.printStackTrace();
@@ -54,6 +55,27 @@ public class VehicleSearchServlet extends HttpServlet {
 
         req.setAttribute("favoritedIds", getFavoritedIds(req));
         req.getRequestDispatcher("/WEB-INF/views/renter/vehicle-list.jsp").forward(req, resp);
+    }
+
+    /** Price used for sorting = what the renter would actually pay per day (promotion price if a deal is on). */
+    private static java.math.BigDecimal effectivePrice(Vehicle v) {
+        return v.isHasPromotion() && v.getDiscountedPrice() != null ? v.getDiscountedPrice() : v.getPricePerDay();
+    }
+
+    /** Applies the chosen sort; an unknown/empty value keeps the default order. */
+    private static List<Vehicle> sorted(List<Vehicle> list, String sort) {
+        if (sort == null || list == null || list.size() < 2) return list;
+        java.util.Comparator<Vehicle> byPrice = java.util.Comparator.comparing(VehicleSearchServlet::effectivePrice);
+        java.util.Comparator<Vehicle> cmp = switch (sort) {
+            case "price_asc" -> byPrice;
+            case "price_desc" -> byPrice.reversed();
+            case "rating" -> java.util.Comparator.comparingDouble(Vehicle::getAverageRating).reversed().thenComparing(byPrice);
+            case "discount" -> java.util.Comparator.comparingInt(Vehicle::getDiscountPercent).reversed().thenComparing(byPrice);
+            case "newest" -> java.util.Comparator.comparingInt(Vehicle::getYear).reversed().thenComparing(byPrice);
+            default -> null;
+        };
+        if (cmp == null) return list;
+        return list.stream().sorted(cmp).collect(java.util.stream.Collectors.toList());
     }
 
     private void addIfPresent(HttpServletRequest req, Map<String, String> filters, String key) {

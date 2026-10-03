@@ -12,6 +12,8 @@ public class Booking {
     private LocalDate endDate;
     private BigDecimal totalAmount;
     private BigDecimal lateFee;
+    private BigDecimal ratePerDay;   // per-day price actually applied (promotion price if a deal was active)
+    private String fareMethod;       // CARD or WALLET — which fare rule produced totalAmount
     private Long couponId;
     private String status; // AWAITING_PAYMENT, CONFIRMED, ONGOING, RETURNED, COMPLETED, CANCELLED
     private LocalDateTime returnedAt;
@@ -42,6 +44,10 @@ public class Booking {
     public BigDecimal getTotalAmount() { return totalAmount; }
     public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
 
+    public BigDecimal getRatePerDay() { return ratePerDay; }
+    public void setRatePerDay(BigDecimal ratePerDay) { this.ratePerDay = ratePerDay; }
+    public String getFareMethod() { return fareMethod; }
+    public void setFareMethod(String fareMethod) { this.fareMethod = fareMethod; }
     public BigDecimal getLateFee() { return lateFee; }
     public void setLateFee(BigDecimal lateFee) { this.lateFee = lateFee; }
 

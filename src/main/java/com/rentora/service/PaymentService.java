@@ -10,6 +10,10 @@ import com.rentora.dao.interfaces.UserDAO;
 import com.rentora.dao.interfaces.VehicleDAO;
 import com.rentora.exception.ValidationException;
 import com.rentora.model.Booking;
+import com.rentora.strategy.PaymentStrategies;
+import com.rentora.strategy.PaymentStrategy;
+import java.math.BigDecimal;
+import java.time.temporal.ChronoUnit;
 import com.rentora.model.Payment;
 import com.rentora.model.User;
 import com.rentora.observer.NotificationEvent;
@@ -58,9 +62,20 @@ public class PaymentService {
             throw new ValidationException("This booking's 10-minute payment window has expired. Please book again.");
         }
 
+        // The renter can switch Card <-> Wallet on the payment page, so charge the fare for the method
+        // they actually pay with (Card +5% fee, Wallet -2%) — and keep the stored booking in step.
+        String method = PaymentStrategies.normalise(paymentMethod);
+        BigDecimal charged = booking.getTotalAmount();
+        if (booking.getRatePerDay() != null && !method.equals(booking.getFareMethod())) {
+            long days = ChronoUnit.DAYS.between(booking.getStartDate(), booking.getEndDate()) + 1;
+            PaymentStrategy strategy = PaymentStrategies.forMethod(method);
+            charged = strategy.calculateTotal(booking.getRatePerDay(), days);
+            bookingDAO.updatePricing(bookingId, charged, booking.getRatePerDay(), method);
+        }
+
         Payment payment = new Payment();
         payment.setBookingId(bookingId);
-        payment.setAmount(booking.getTotalAmount());
+        payment.setAmount(charged);
         payment.setPaymentMethod(paymentMethod);
         payment.setPaymentStatus("SUCCESS");
         payment.setTransactionRef("TXN-" + System.currentTimeMillis() + "-" + bookingId);

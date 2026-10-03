@@ -17,8 +17,8 @@ public class BookingDAOImpl implements BookingDAO {
     private final DBConnectionManager connectionManager = DBConnectionManager.getInstance();
 
     private static final String INSERT_BOOKING =
-            "INSERT INTO bookings (renter_id, vehicle_id, start_date, end_date, total_amount, coupon_id, status) " +
-            "VALUES (?, ?, ?, ?, ?, ?, 'AWAITING_PAYMENT')";
+            "INSERT INTO bookings (renter_id, vehicle_id, start_date, end_date, total_amount, coupon_id, rate_per_day, fare_method, status) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'AWAITING_PAYMENT')";
 
     private static final String BASE_SELECT =
             "SELECT b.*, v.brand AS vehicle_brand, v.model AS vehicle_model, v.vehicle_number AS vehicle_number, " +
@@ -39,6 +39,10 @@ public class BookingDAOImpl implements BookingDAO {
             ps.setBigDecimal(5, booking.getTotalAmount());
             if (booking.getCouponId() != null) ps.setLong(6, booking.getCouponId());
             else ps.setNull(6, Types.BIGINT);
+            if (booking.getRatePerDay() != null) ps.setBigDecimal(7, booking.getRatePerDay());
+            else ps.setNull(7, Types.DECIMAL);
+            if (booking.getFareMethod() != null) ps.setString(8, booking.getFareMethod());
+            else ps.setNull(8, Types.VARCHAR);
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) return keys.getLong(1);
@@ -185,6 +189,35 @@ public class BookingDAOImpl implements BookingDAO {
         }
     }
 
+    @Override
+    public boolean updatePricing(long bookingId, java.math.BigDecimal totalAmount, java.math.BigDecimal ratePerDay, String fareMethod) throws Exception {
+        try (Connection conn = connectionManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                     "UPDATE bookings SET total_amount = ?, rate_per_day = ?, fare_method = ? WHERE booking_id = ?")) {
+            ps.setBigDecimal(1, totalAmount);
+            ps.setBigDecimal(2, ratePerDay);
+            ps.setString(3, fareMethod);
+            ps.setLong(4, bookingId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    @Override
+    public boolean updateDates(long bookingId, LocalDate start, LocalDate end, java.math.BigDecimal totalAmount,
+                               java.math.BigDecimal ratePerDay, String fareMethod) throws Exception {
+        try (Connection conn = connectionManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                     "UPDATE bookings SET start_date = ?, end_date = ?, total_amount = ?, rate_per_day = ?, fare_method = ? WHERE booking_id = ?")) {
+            ps.setDate(1, Date.valueOf(start));
+            ps.setDate(2, Date.valueOf(end));
+            ps.setBigDecimal(3, totalAmount);
+            ps.setBigDecimal(4, ratePerDay);
+            ps.setString(5, fareMethod);
+            ps.setLong(6, bookingId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
     /** Checks for overlapping active bookings on the same vehicle (used pre-booking). */
     @Override
     public boolean hasDateConflict(long vehicleId, LocalDate start, LocalDate end) throws Exception {
@@ -242,6 +275,12 @@ public class BookingDAOImpl implements BookingDAO {
         BigDecimal pricePerDay = rs.getBigDecimal("vehicle_price_per_day");
         b.setVehiclePricePerDay(pricePerDay != null ? pricePerDay : BigDecimal.ZERO);
         b.setRenterName(rs.getString("renter_name"));
+        try {
+            b.setRatePerDay(rs.getBigDecimal("rate_per_day"));
+            b.setFareMethod(rs.getString("fare_method"));
+        } catch (SQLException ignored) {
+            // columns are added on startup by SchemaUpgradeListener
+        }
         return b;
     }
 }

@@ -38,9 +38,7 @@ public class BookingEditServlet extends HttpServlet {
             LocalDate end = LocalDate.parse(req.getParameter("endDate"));
             String paymentMethod = req.getParameter("paymentMethod");
 
-            PaymentStrategy strategy = "WALLET".equalsIgnoreCase(paymentMethod)
-                    ? new WalletPaymentStrategy()
-                    : new CardPaymentStrategy();
+            PaymentStrategy strategy = com.rentora.strategy.PaymentStrategies.forMethod(paymentMethod);
 
             bookingService.updateBookingDates(bookingId, renter.getUserId(), start, end, strategy);
             resp.sendRedirect(req.getContextPath() + "/renter/" + redirectTo + "?bookingId=" + bookingId + "&updated=1");

@@ -248,7 +248,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 window.location.href = contextPath + '/login';
                 return;
             }
-            if (!resp.ok) { console.warn('Wishlist toggle failed:', resp.status); return; }
+            if (!resp.ok) { window.rentoraToast('Could not update your wishlist. Please try again.', 'error'); return; }
 
             const result = await resp.text();
             const nowFavorited = result === 'added';
@@ -264,7 +264,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 card.style.opacity = '0';
                 setTimeout(() => card.remove(), 300);
             }
-        } catch (err) { console.warn('Wishlist toggle error:', err); }
+        } catch (err) { window.rentoraToast("Network problem \u2014 your wishlist wasn't updated. Check your connection.", 'error'); }
     });
 
     // ---- Password strength micro-feedback (register page) ----
@@ -462,5 +462,59 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!document.querySelector('[data-promo-end]')) return;
         tick();
         setInterval(tick, 1000);
+    });
+})();
+
+
+// ---- Toast notifications: window.rentoraToast('message', 'error' | 'success' | 'info') ----
+window.rentoraToast = function (message, type) {
+    var host = document.getElementById('rentora-toasts');
+    if (!host) {
+        host = document.createElement('div');
+        host.id = 'rentora-toasts';
+        host.setAttribute('aria-live', 'polite');
+        document.body.appendChild(host);
+    }
+    var t = document.createElement('div');
+    t.className = 'rentora-toast ' + (type || 'info');
+    t.setAttribute('role', type === 'error' ? 'alert' : 'status');
+    var icon = type === 'error' ? 'fa-circle-exclamation' : (type === 'success' ? 'fa-circle-check' : 'fa-circle-info');
+    t.innerHTML = '<i class="fa-solid ' + icon + '"></i><span></span>';
+    t.querySelector('span').textContent = message;
+    host.appendChild(t);
+    requestAnimationFrame(function () { t.classList.add('show'); });
+    setTimeout(function () { t.classList.remove('show'); setTimeout(function () { t.remove(); }, 300); }, 4500);
+};
+
+// ---- Submit loading state: POST forms disable their button and show a spinner, so a slow request
+//      (payment, upload, booking) can't be double-submitted and the user can see something is happening.
+//      Skips forms stopped by validation or a cancelled confirm() (they call preventDefault first). ----
+(function () {
+    document.addEventListener('submit', function (e) {
+        var form = e.target;
+        if (e.defaultPrevented || !form || form.tagName !== 'FORM') return;
+        if ((form.method || '').toLowerCase() !== 'post' || form.hasAttribute('data-no-loading')) return;
+        if (form.dataset.submitting) { e.preventDefault(); return; }   // second click while sending
+        form.dataset.submitting = '1';
+        var btn = e.submitter || form.querySelector('button[type="submit"], button:not([type]), input[type="submit"]');
+        if (!btn || btn.tagName === 'INPUT') return;
+        // Wait a tick: the browser has already captured the form data by then, so disabling is safe.
+        setTimeout(function () {
+            btn.dataset.originalHtml = btn.innerHTML;
+            btn.style.minWidth = btn.offsetWidth + 'px';
+            btn.disabled = true;
+            btn.classList.add('is-loading');
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>' +
+                (btn.dataset.loadingText || 'Please wait\u2026');
+        }, 0);
+    });
+    // Back/forward cache: restore buttons if the user returns to the page.
+    window.addEventListener('pageshow', function (e) {
+        if (!e.persisted) return;
+        document.querySelectorAll('form[data-submitting]').forEach(function (f) { delete f.dataset.submitting; });
+        document.querySelectorAll('button.is-loading').forEach(function (b) {
+            b.disabled = false; b.classList.remove('is-loading');
+            if (b.dataset.originalHtml) b.innerHTML = b.dataset.originalHtml;
+        });
     });
 })();

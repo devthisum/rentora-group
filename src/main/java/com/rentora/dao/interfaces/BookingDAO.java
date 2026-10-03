@@ -23,6 +23,10 @@ public interface BookingDAO {
     boolean updateStatus(long bookingId, String status) throws Exception;
     boolean markReturned(long bookingId, BigDecimal lateFee) throws Exception;
     /** Renter edits their still-unpaid booking's dates/total before paying. */
+    /** Re-prices a booking (used when the renter switches payment method at checkout). */
+    boolean updatePricing(long bookingId, java.math.BigDecimal totalAmount, java.math.BigDecimal ratePerDay, String fareMethod) throws Exception;
+    boolean updateDates(long bookingId, java.time.LocalDate start, java.time.LocalDate end, java.math.BigDecimal totalAmount, java.math.BigDecimal ratePerDay, String fareMethod) throws Exception;
+    @Deprecated
     boolean updateDates(long bookingId, java.time.LocalDate start, java.time.LocalDate end, java.math.BigDecimal totalAmount) throws Exception;
     boolean hasDateConflict(long vehicleId, java.time.LocalDate start, java.time.LocalDate end) throws Exception;
     boolean hasDateConflict(long vehicleId, java.time.LocalDate start, java.time.LocalDate end, long excludeBookingId) throws Exception;

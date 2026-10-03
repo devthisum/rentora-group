@@ -9,6 +9,7 @@ import com.rentora.exception.ValidationException;
 import com.rentora.model.Booking;
 import com.rentora.model.Vehicle;
 import com.rentora.observer.NotificationSubject;
+import com.rentora.strategy.PaymentStrategies;
 import com.rentora.strategy.PaymentStrategy;
 import com.rentora.util.ValidationUtil;
 import com.rentora.service.PromotionService;
@@ -71,6 +72,8 @@ public class BookingService {
         booking.setStartDate(startDate);
         booking.setEndDate(endDate);
         booking.setTotalAmount(total);
+        booking.setRatePerDay(effectivePricePerDay);
+        booking.setFareMethod(paymentStrategy.getMethodName());
 
         // Notifications to admin are sent once payment actually succeeds (see PaymentService).
         // A booking that's created but never paid for shouldn't alert anyone.
@@ -117,9 +120,11 @@ public class BookingService {
             throw new ValidationException("Vehicle not found.");
         }
         long days = ChronoUnit.DAYS.between(newStart, newEnd) + 1;
-        BigDecimal newTotal = paymentStrategy.calculateTotal(maybeVehicle.get().getPricePerDay(), days);
+        // Keep any active promotion when dates change (previously the deal was silently lost here).
+        BigDecimal effectivePrice = promotionService.getEffectivePricePerDay(maybeVehicle.get());
+        BigDecimal newTotal = paymentStrategy.calculateTotal(effectivePrice, days);
 
-        bookingDAO.updateDates(bookingId, newStart, newEnd, newTotal);
+        bookingDAO.updateDates(bookingId, newStart, newEnd, newTotal, effectivePrice, paymentStrategy.getMethodName());
     }
 
     /**

@@ -165,53 +165,6 @@
   </section>
 
   <!-- ============ EXPLORE OUR FLEET ============ -->
-  <!-- ============ HOT DEALS (vehicles with an active promotion, biggest discount first) ============ -->
-  <c:if test="${not empty hotDeals}">
-    <section class="section-pad hot-deals-section" id="deals" style="background:var(--bg2);">
-      <div class="container">
-        <div class="row align-items-end mb-4">
-          <div class="col-md-7" data-aos="fade-up">
-            <div class="eyebrow mb-3"><i class="fa-solid fa-fire hot-deals-flame me-1"></i>Limited-time offers</div>
-            <h2 class="display-6 fw-bold">Hot <span class="gradient-text">deals</span></h2>
-          </div>
-          <div class="col-md-5 text-md-end" data-aos="fade-up">
-            <a href="${pageContext.request.contextPath}/vehicles?deals=1" class="btn btn-outline-glass mt-3 mt-md-0">View all deals <i class="fa-solid fa-arrow-right ms-1"></i></a>
-          </div>
-        </div>
-        <div class="row g-4">
-          <c:forEach var="v" items="${hotDeals}" varStatus="loop">
-            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="${loop.index * 100}">
-              <div class="vehicle-card deal">
-                <div class="vehicle-img" style="position:relative;">
-                  <img src="${not empty v.imageUrl ? v.imageUrl : 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?q=80&w=800&auto=format&fit=crop'}" alt="${v.brand} ${v.model}">
-                  <div class="vehicle-badge">${v.categoryName}</div>
-                  <c:if test="${sessionScope.user.roleName == 'RENTER'}">
-                    <button class="vehicle-heart wishlist-toggle-btn" data-vehicle-id="${v.vehicleId}"
-                            data-favorited="${favoritedIds.contains(v.vehicleId)}" style="border:none;">
-                      <i class="fa-${favoritedIds.contains(v.vehicleId) ? 'solid' : 'regular'} fa-heart"
-                         style="color:${favoritedIds.contains(v.vehicleId) ? '#EF4444' : ''};"></i>
-                    </button>
-                  </c:if>
-                  <rt:promoRibbon vehicle="${v}" />
-                </div>
-                <div class="p-4">
-                  <h5 class="mb-1" style="font-family:var(--font-serif);font-weight:800;">${v.brand} ${v.model}</h5>
-                  <div class="small fw-semibold mb-2" style="color:var(--accent);"><i class="fa-solid fa-tag me-1"></i>${v.promotionTitle}</div>
-                  <div class="d-flex gap-2 mb-3 flex-wrap">
-                    <span class="feature-pill"><i class="fa-solid fa-gear me-1"></i>${v.transmission}</span>
-                    <span class="feature-pill"><i class="fa-solid fa-users me-1"></i>${v.seats} Seats</span>
-                  </div>
-                  <div class="mb-3"><rt:promoPrice vehicle="${v}" /></div>
-                  <a href="${pageContext.request.contextPath}/vehicle-details?id=${v.vehicleId}" class="btn btn-gradient w-100" style="padding:9px 20px;font-size:0.85rem;">Book this deal</a>
-                </div>
-              </div>
-            </div>
-          </c:forEach>
-        </div>
-      </div>
-    </section>
-  </c:if>
-
   <section class="section-pad" id="vehicles">
     <div class="container">
       <div class="row align-items-end mb-5">

@@ -56,6 +56,8 @@ public class PaymentServlet extends HttpServlet {
                 return;
             }
             req.setAttribute("booking", booking);
+            req.setAttribute("breakdown", com.rentora.model.PriceBreakdown.of(booking,
+                    new com.rentora.dao.impl.VehicleDAOImpl().findById(booking.getVehicleId()).orElse(null)));
             req.setAttribute("savedMethods", savedPaymentMethodService.getByUser(renter.getUserId()));
 
             // Fetch a fresh copy (not the possibly-stale session object) so previously-saved

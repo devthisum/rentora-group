@@ -40,11 +40,6 @@ public class HomeServlet extends HttpServlet {
         } catch (Exception e) {
             req.setAttribute("featuredVehicles", Collections.emptyList());
         }
-        try {
-            req.setAttribute("hotDeals", promotionService.getHotDeals(3));
-        } catch (Exception e) {
-            req.setAttribute("hotDeals", Collections.emptyList());
-        }
 
         req.setAttribute("favoritedIds", getFavoritedIds(req));
         req.getRequestDispatcher("/index.jsp").forward(req, resp);

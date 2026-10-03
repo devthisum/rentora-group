@@ -198,6 +198,7 @@
                 <label class="form-label small">Pickup &amp; Return Dates</label>
                 <input type="text" id="dateRangePicker" class="form-control form-control-glass" placeholder="Select dates..." readonly>
               </div>
+              <div id="calendarStatus" class="calendar-status" role="status" aria-live="polite" hidden></div>
               <div class="d-flex gap-3 mb-3 small">
                 <span><span class="calendar-dot" style="background:#22C55E;"></span> Booked</span>
                 <span><span class="calendar-dot" style="background:#EF4444;"></span> Maintenance buffer</span>
@@ -280,16 +281,41 @@
           return dates;
         }
 
-        fetch("${pageContext.request.contextPath}/vehicle-calendar?vehicleId=" + vehicleId)
-          .then(r => r.json())
-          .then(data => {
-            bookedRanges = data.booked || [];
-            maintenanceRanges = data.maintenance || [];
-            initCalendar();
-          })
-          .catch(() => initCalendar());
+        var statusEl = document.getElementById('calendarStatus');
+        var pickerEl = document.getElementById('dateRangePicker');
+        var calendarReady = false;
+
+        function setStatus(html, kind) {
+          statusEl.hidden = !html;
+          statusEl.className = 'calendar-status' + (kind ? ' ' + kind : '');
+          statusEl.innerHTML = html || '';
+        }
+
+        // Loading state while availability is fetched; clear, friendly error (with retry) if it fails.
+        function loadAvailability() {
+          pickerEl.disabled = true;
+          setStatus('<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Checking availability&hellip;', 'loading');
+          fetch("${pageContext.request.contextPath}/vehicle-calendar?vehicleId=" + vehicleId)
+            .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+            .then(function (data) {
+              bookedRanges = data.booked || [];
+              maintenanceRanges = data.maintenance || [];
+              setStatus('');
+              pickerEl.disabled = false;
+              initCalendar();
+            })
+            .catch(function () {
+              pickerEl.disabled = false;
+              setStatus('<i class="fa-solid fa-triangle-exclamation me-1"></i>We couldn\'t load the booked dates. You can still choose dates and we\'ll check availability when you book. <button type="button" class="btn btn-sm btn-outline-glass ms-1" id="calendarRetry">Retry</button>', 'error');
+              document.getElementById('calendarRetry').addEventListener('click', loadAvailability);
+              initCalendar();
+            });
+        }
+        loadAvailability();
 
         function initCalendar() {
+          if (calendarReady && pickerEl._flatpickr) { pickerEl._flatpickr.destroy(); }
+          calendarReady = true;
           var disable = [];
           bookedRanges.forEach(r => disable.push({ from: r.start, to: r.end }));
           maintenanceRanges.forEach(r => disable.push({ from: r.start, to: r.end }));

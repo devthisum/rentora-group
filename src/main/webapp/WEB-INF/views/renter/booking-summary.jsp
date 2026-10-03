@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib uri="jakarta.tags.core" prefix="c" %>
+<%@ taglib prefix="rt" tagdir="/WEB-INF/tags" %>
 <!DOCTYPE html>
 <html lang="en">
 <head><jsp:include page="/WEB-INF/views/common/head.jsp" /></head>
@@ -72,16 +73,9 @@
         <div class="d-flex justify-content-between mb-2">
           <span class="text-soft">Duration</span><strong>${numDays} day${numDays == 1 ? '' : 's'}</strong>
         </div>
-        <c:if test="${not empty vehicle}">
-          <div class="d-flex justify-content-between mb-2">
-            <span class="text-soft">Rate</span><strong>Rs. ${vehicle.pricePerDay} / day</strong>
-          </div>
-        </c:if>
         <hr>
-        <div class="d-flex justify-content-between">
-          <span class="fw-bold">Total Due</span>
-          <span class="fw-bold" style="font-size:1.3rem; color: var(--accent);">Rs. ${booking.totalAmount}</span>
-        </div>
+        <h6 class="fw-bold mb-2"><i class="fa-solid fa-list-ul me-2" style="color: var(--accent);"></i>Price breakdown</h6>
+        <rt:priceBreakdown breakdown="${breakdown}" />
 
         <!-- Edit dates (collapsed by default) -->
         <div class="collapse mt-3" id="editDatesForm">

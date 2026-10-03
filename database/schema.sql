@@ -150,6 +150,8 @@ CREATE TABLE bookings (
     -- or CANCELLED at any point before ONGOING
     status           ENUM('AWAITING_PAYMENT','CONFIRMED','ONGOING','RETURNED','COMPLETED','CANCELLED') DEFAULT 'AWAITING_PAYMENT',
     returned_at      TIMESTAMP NULL,
+    rate_per_day     DECIMAL(10,2) NULL,           -- per-day price applied (promotion price if a deal was active)
+    fare_method      VARCHAR(10) NULL,             -- CARD (+5% fee) or WALLET (-2%), see migration_booking_fare.sql
     created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (renter_id) REFERENCES users(user_id),
     FOREIGN KEY (vehicle_id) REFERENCES vehicles(vehicle_id),

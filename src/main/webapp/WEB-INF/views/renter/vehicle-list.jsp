@@ -16,8 +16,8 @@
     <h2 class="fw-bold text-center mb-1" data-aos="fade-up">Explore Our Fleet</h2>
     <p class="text-center text-secondary mb-4" data-aos="fade-up">Browse our fleet and find the perfect ride for your trip</p>
 
-    <c:if test="${not empty errorMessage}">
-      <div class="alert alert-danger">${errorMessage}</div>
+    <c:if test="${param.compare == 'few'}">
+      <div class="alert alert-info" role="alert">Pick at least two vehicles to compare. Tick &ldquo;Compare&rdquo; on the vehicles you like.</div>
     </c:if>
 
     <!-- ============ CATEGORY PILLS ============ -->
@@ -64,13 +64,36 @@
           <c:otherwise>${fn:length(vehicles)} vehicle${fn:length(vehicles) == 1 ? '' : 's'} found</c:otherwise>
         </c:choose>
       </p>
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <label for="sortSelect" class="small text-secondary fw-semibold mb-0">Sort by</label>
+        <select id="sortSelect" class="form-select form-select-glass sort-select" data-current="${param.sort}" aria-label="Sort vehicles">
+          <option value="">Recommended</option>
+          <option value="price_asc" ${param.sort == 'price_asc' ? 'selected' : ''}>Price: low to high</option>
+          <option value="price_desc" ${param.sort == 'price_desc' ? 'selected' : ''}>Price: high to low</option>
+          <option value="rating" ${param.sort == 'rating' ? 'selected' : ''}>Top rated</option>
+          <option value="discount" ${param.sort == 'discount' ? 'selected' : ''}>Biggest discount</option>
+          <option value="newest" ${param.sort == 'newest' ? 'selected' : ''}>Newest model</option>
+        </select>
       <div class="fleet-view-toggle" id="fleetViewToggle">
         <button type="button" data-view="list" class="active"><i class="fa-solid fa-list"></i>List</button>
         <button type="button" data-view="grid"><i class="fa-solid fa-grip"></i>Grid</button>
       </div>
+      </div>
     </div>
 
+    <div id="fleetResults" aria-live="polite">
     <c:choose>
+      <c:when test="${not empty errorMessage && empty vehicles}">
+        <div class="error-state glass-card" role="alert">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <h5>We couldn't load the fleet</h5>
+          <p>${errorMessage} This is usually temporary &mdash; please try again in a moment.</p>
+          <div class="d-flex gap-2 justify-content-center flex-wrap mt-3">
+            <button type="button" class="btn btn-gradient" onclick="window.location.reload()"><i class="fa-solid fa-rotate-right me-1"></i>Try again</button>
+            <a href="${pageContext.request.contextPath}/" class="btn btn-outline-glass">Back to home</a>
+          </div>
+        </div>
+      </c:when>
       <c:when test="${empty vehicles}">
         <div class="empty-state glass-card" data-aos="fade-up">
           <i class="fa-solid fa-car-side"></i>
@@ -117,7 +140,8 @@
                   <span><i class="fa-solid fa-user"></i>${v.seats} seats</span>
                   <c:if test="${not empty v.mileage}"><span><i class="fa-solid fa-road"></i>${v.mileage} km</span></c:if>
                 </div>
-                <div class="d-flex gap-2 mt-3">
+                <label class="compare-toggle mt-2"><input type="checkbox" class="compare-check" data-id="${v.vehicleId}" data-name="${v.brand} ${v.model}"><span><i class="fa-solid fa-code-compare me-1"></i>Compare</span></label>
+                <div class="d-flex gap-2 mt-2">
                   <a href="${pageContext.request.contextPath}/vehicle-details?id=${v.vehicleId}" class="btn btn-outline-glass flex-fill">Details</a>
                   <a href="${pageContext.request.contextPath}/vehicle-details?id=${v.vehicleId}" class="btn btn-gradient flex-fill">Book Now</a>
                 </div>
@@ -127,8 +151,21 @@
         </div>
       </c:otherwise>
     </c:choose>
+    </div>
+  </div>
+
+  <!-- Compare bar: appears once a vehicle is ticked; picks survive filtering/sorting (sessionStorage) -->
+  <div class="compare-bar" id="compareBar" hidden>
+    <div class="compare-bar-inner">
+      <div class="compare-bar-items" id="compareItems"></div>
+      <span class="compare-bar-hint" id="compareHint"></span>
+      <button type="button" class="btn btn-sm btn-outline-glass" id="compareClear">Clear</button>
+      <a href="#" class="btn btn-gradient btn-sm disabled" id="compareGo" aria-disabled="true"><i class="fa-solid fa-code-compare me-1"></i>Compare</a>
+    </div>
   </div>
 
   <jsp:include page="/WEB-INF/views/common/footer.jsp" />
+  <script>window.RENTORA_CTX = '${pageContext.request.contextPath}';</script>
+  <script src="${pageContext.request.contextPath}/assets/js/compare.js"></script>
 </body>
 </html>

@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib uri="jakarta.tags.core" prefix="c" %>
+<%@ taglib prefix="rt" tagdir="/WEB-INF/tags" %>
 <!DOCTYPE html>
 <html lang="en">
 <head><jsp:include page="/WEB-INF/views/common/head.jsp" /></head>
@@ -24,12 +25,16 @@
         <div class="d-flex justify-content-between align-items-center">
           <div>
             <div class="text-soft small">${booking.vehicleBrand} ${booking.vehicleModel} &bull; ${booking.startDate} &rarr; ${booking.endDate}</div>
-            <div class="fw-bold" style="font-size:1.1rem; color: var(--accent);">Rs. ${booking.totalAmount}</div>
           </div>
           <a href="${pageContext.request.contextPath}/renter/booking-summary?bookingId=${booking.bookingId}" class="btn btn-sm btn-outline-glass">
             <i class="fa-solid fa-arrow-left me-1"></i>Back to Summary
           </a>
         </div>
+      </div>
+
+      <div class="glass-card p-4 mb-4" data-aos="fade-up">
+        <h6 class="fw-bold mb-2"><i class="fa-solid fa-list-ul me-2" style="color: var(--accent);"></i>Price breakdown</h6>
+        <rt:priceBreakdown breakdown="${breakdown}" live="true" />
       </div>
 
       <form method="post" action="${pageContext.request.contextPath}/renter/payment" id="paymentForm">
@@ -120,7 +125,7 @@
           </p>
 
           <button type="submit" class="btn btn-gradient w-100 py-2">
-            <i class="fa-solid fa-lock me-2"></i>Pay Rs. ${booking.totalAmount} &amp; Confirm Booking
+            <i class="fa-solid fa-lock me-2"></i>Pay <span id="payTotal">Rs. ${booking.totalAmount}</span> &amp; Confirm Booking
           </button>
         </div>
       </form>
@@ -134,6 +139,31 @@
   <script>
     document.getElementById('payCard').addEventListener('change', toggleFields);
     document.getElementById('payWallet').addEventListener('change', toggleFields);
+    // Live re-pricing: Card adds the 5% service fee, Wallet gives 2% off — the server re-prices to match on payment.
+    function updateBreakdown() {
+      var box = document.getElementById('priceBreakdown');
+      if (!box || box.dataset.itemised !== 'true') return;
+      var sub = parseFloat(box.dataset.subtotal);
+      var wallet = document.getElementById('payWallet').checked;
+      var adj = Math.round(sub * parseFloat(wallet ? box.dataset.walletRate : box.dataset.cardRate) * 100) / 100;
+      var total = (wallet ? sub - adj : sub + adj).toFixed(2);
+      document.getElementById('pbAdjLabel').innerHTML = wallet
+        ? '<i class="fa-solid fa-wallet me-1"></i>Wallet loyalty discount <span class="pb-sub">2%</span>'
+        : '<span class="text-soft">Card service fee <span class="pb-sub">5%</span></span>';
+      document.getElementById('pbAdjRow').classList.toggle('pb-good', wallet);
+      document.getElementById('pbAdj').innerHTML = (wallet ? '&minus; ' : '+ ') + 'Rs. ' + adj.toFixed(2);
+      document.getElementById('pbTotal').textContent = 'Rs. ' + total;
+      document.getElementById('payTotal').textContent = 'Rs. ' + total;
+    }
+    document.getElementById('payCard').addEventListener('change', updateBreakdown);
+    document.getElementById('payWallet').addEventListener('change', updateBreakdown);
+
+    // Start on the method the booking was priced with, so the page total matches the summary page.
+    (function () {
+      var box = document.getElementById('priceBreakdown');
+      if (box && box.dataset.method === 'WALLET') { document.getElementById('payWallet').checked = true; toggleFields(); }
+    })();
+
     function toggleFields() {
       document.getElementById('cardFields').style.display = document.getElementById('payCard').checked ? 'block' : 'none';
       document.getElementById('walletFields').style.display = document.getElementById('payWallet').checked ? 'block' : 'none';
@@ -160,6 +190,7 @@
           if (expEl) { expEl.value = opt.dataset.expiry || ''; expEl.readOnly = true; }
         }
         toggleFields();
+        updateBreakdown();
       });
     }
 

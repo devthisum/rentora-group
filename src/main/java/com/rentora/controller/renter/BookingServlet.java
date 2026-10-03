@@ -48,9 +48,7 @@ public class BookingServlet extends HttpServlet {
             String paymentMethod = req.getParameter("paymentMethod"); // CARD or WALLET
 
             // Strategy Pattern: choose fare calculation algorithm based on payment method
-            PaymentStrategy strategy = "WALLET".equalsIgnoreCase(paymentMethod)
-                    ? new WalletPaymentStrategy()
-                    : new CardPaymentStrategy();
+            PaymentStrategy strategy = com.rentora.strategy.PaymentStrategies.forMethod(paymentMethod);
 
             long bookingId = bookingService.createBooking(
                     renter.getUserId(), vehicleId, start, end, strategy);

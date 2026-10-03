@@ -6,7 +6,7 @@ import java.math.RoundingMode;
 /** Wallet payment: base fare, no service fee, small loyalty incentive (2% off). */
 public class WalletPaymentStrategy implements PaymentStrategy {
 
-    private static final BigDecimal WALLET_DISCOUNT_RATE = new BigDecimal("0.02");
+    public static final BigDecimal WALLET_DISCOUNT_RATE = new BigDecimal("0.02");
 
     @Override
     public BigDecimal calculateTotal(BigDecimal pricePerDay, long numberOfDays) {

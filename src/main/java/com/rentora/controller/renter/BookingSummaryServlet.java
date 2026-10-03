@@ -61,6 +61,7 @@ public class BookingSummaryServlet extends HttpServlet {
 
             long days = ChronoUnit.DAYS.between(booking.getStartDate(), booking.getEndDate()) + 1;
             req.setAttribute("numDays", days);
+            req.setAttribute("breakdown", com.rentora.model.PriceBreakdown.of(booking, vehicle.orElse(null)));
 
         } catch (Exception e) {
             req.setAttribute("errorMessage", "Could not load this booking.");

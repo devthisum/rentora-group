@@ -6,7 +6,7 @@ import java.math.RoundingMode;
 /** Standard card payment: base fare + a flat platform service fee (5%). */
 public class CardPaymentStrategy implements PaymentStrategy {
 
-    private static final BigDecimal SERVICE_FEE_RATE = new BigDecimal("0.05");
+    public static final BigDecimal SERVICE_FEE_RATE = new BigDecimal("0.05");
 
     @Override
     public BigDecimal calculateTotal(BigDecimal pricePerDay, long numberOfDays) {
