@@ -123,6 +123,18 @@
         </div>
 
         <div class="mb-3">
+          <label class="form-label small">More Photos (gallery)</label>
+          <input type="file" name="galleryFiles" id="galleryFiles" accept="image/*" multiple class="form-control form-control-glass">
+          <small class="text-soft">Select several photos at once (up to 10 per vehicle including the cover). Shown as thumbnails on the vehicle page.</small>
+          <div id="galleryPreview" class="d-flex flex-wrap gap-2 mt-2"></div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small">…or more image URLs</label>
+          <textarea name="extraImageUrls" rows="2" placeholder="One https:// link per line" class="form-control form-control-glass"></textarea>
+        </div>
+
+        <div class="mb-3">
           <label class="form-label small">Description</label>
           <textarea name="description" rows="3" class="form-control form-control-glass"></textarea>
         </div>
@@ -143,6 +155,18 @@
     categorySelect.addEventListener('change', syncCategoryName);
     syncCategoryName();
 
+
+    const galleryFiles = document.getElementById('galleryFiles');
+    const galleryPreview = document.getElementById('galleryPreview');
+    galleryFiles.addEventListener('change', () => {
+      galleryPreview.innerHTML = '';
+      Array.from(galleryFiles.files).slice(0, 10).forEach(f => {
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(f);
+        img.style.cssText = 'width:80px;height:64px;object-fit:cover;border-radius:8px;';
+        galleryPreview.appendChild(img);
+      });
+    });
     const imageFile = document.getElementById('imageFile');
     const imagePreview = document.getElementById('imagePreview');
     imageFile.addEventListener('change', () => {

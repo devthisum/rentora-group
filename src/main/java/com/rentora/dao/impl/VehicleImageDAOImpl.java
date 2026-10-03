@@ -40,4 +40,46 @@ public class VehicleImageDAOImpl implements VehicleImageDAO {
         }
         return urls;
     }
+
+    @Override
+    public List<com.rentora.model.VehicleImage> findRowsByVehicle(long vehicleId) throws Exception {
+        List<com.rentora.model.VehicleImage> rows = new ArrayList<>();
+        String sql = "SELECT image_id, vehicle_id, image_url, is_primary FROM vehicle_images WHERE vehicle_id = ? ORDER BY is_primary DESC, image_id ASC";
+        try (Connection conn = connectionManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, vehicleId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    com.rentora.model.VehicleImage img = new com.rentora.model.VehicleImage();
+                    img.setImageId(rs.getLong("image_id"));
+                    img.setVehicleId(rs.getLong("vehicle_id"));
+                    img.setImageUrl(rs.getString("image_url"));
+                    img.setPrimary(rs.getBoolean("is_primary"));
+                    rows.add(img);
+                }
+            }
+        }
+        return rows;
+    }
+
+    @Override
+    public boolean deleteImage(long imageId, long vehicleId) throws Exception {
+        try (Connection conn = connectionManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                     "DELETE FROM vehicle_images WHERE image_id = ? AND vehicle_id = ? AND is_primary = FALSE")) {
+            ps.setLong(1, imageId);
+            ps.setLong(2, vehicleId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    @Override
+    public void deletePrimary(long vehicleId) throws Exception {
+        try (Connection conn = connectionManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                     "DELETE FROM vehicle_images WHERE vehicle_id = ? AND is_primary = TRUE")) {
+            ps.setLong(1, vehicleId);
+            ps.executeUpdate();
+        }
+    }
 }

@@ -22,6 +22,8 @@ import java.io.IOException;
  *     the ONLY moment the vehicle's shop-floor status becomes "Booked" —
  *     see VehicleDAOImpl) or marks a no-show, cancelling the booking and
  *     freeing those dates.
+ *   - "Upcoming Bookings": paid bookings whose pickup date is still ahead (e.g.
+ *     booked today for tomorrow) — visible immediately after payment.
  *   - "Currently Out": vehicles actually picked up (ONGOING), so staff can
  *     confirm when they're physically returned — which hands the vehicle
  *     off into the maintenance/inspection workflow.
@@ -43,6 +45,7 @@ public class BookingStaffDashboardServlet extends HttpServlet {
 
         try {
             req.setAttribute("todaysPickups", bookingService.getTodaysPickups());
+            req.setAttribute("upcomingBookings", bookingService.getUpcomingBookings());
             req.setAttribute("currentlyOut", bookingService.getOngoingOrderedByReturn());
         } catch (Exception e) {
             req.setAttribute("errorMessage", "Could not load the booking desk.");

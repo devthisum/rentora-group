@@ -3,6 +3,7 @@ package com.rentora.controller.admin;
 import com.rentora.exception.ValidationException;
 import com.rentora.model.User;
 import com.rentora.model.Vehicle;
+import com.rentora.service.VehicleImageService;
 import com.rentora.service.VehicleService;
 import com.rentora.util.ImageUploadUtil;
 import jakarta.servlet.ServletException;
@@ -19,10 +20,11 @@ import java.math.BigDecimal;
 
 /** Lists the shop's full vehicle stock (GET) and adds a new vehicle to it (POST). Admin only. */
 @WebServlet("/admin/vehicles")
-@MultipartConfig(maxFileSize = 10 * 1024 * 1024) // 10MB per photo
+@MultipartConfig(maxFileSize = 10 * 1024 * 1024, maxRequestSize = 60 * 1024 * 1024) // 10MB per photo
 public class AdminVehicleServlet extends HttpServlet {
 
     private final VehicleService vehicleService = new VehicleService();
+    private final VehicleImageService imageService = new VehicleImageService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -66,7 +68,20 @@ public class AdminVehicleServlet extends HttpServlet {
             String uploadedUrl = ImageUploadUtil.saveIfPresent(filePart, getServletContext(), req.getContextPath(), "vehicles");
             vehicle.setImageUrl(uploadedUrl != null ? uploadedUrl : req.getParameter("imageUrl"));
 
-            vehicleService.addVehicle(vehicle, admin.getUserId());
+            // Collect gallery photos first so a too-long list is rejected BEFORE the vehicle is created.
+            java.util.List<String> extras = new java.util.ArrayList<>(
+                    ImageUploadUtil.saveAll(req.getParts(), "galleryFiles", getServletContext(), req.getContextPath(), "vehicles"));
+            extras.addAll(VehicleImageService.parseUrls(req.getParameter("extraImageUrls")));
+            if (extras.size() + 1 > VehicleImageService.MAX_PHOTOS_PER_VEHICLE) {
+                throw new ValidationException("A vehicle can have at most " + VehicleImageService.MAX_PHOTOS_PER_VEHICLE
+                        + " photos (including the cover).");
+            }
+
+            long vehicleId = vehicleService.addVehicle(vehicle, admin.getUserId());
+
+            // Gallery: cover becomes the primary row, then the extra photos.
+            imageService.syncPrimary(vehicleId, vehicle.getImageUrl());
+            imageService.addExtraImages(vehicleId, extras);
             req.getSession().setAttribute("successMessage", "Vehicle added to the shop's stock.");
             resp.sendRedirect(req.getContextPath() + "/admin/vehicles");
 

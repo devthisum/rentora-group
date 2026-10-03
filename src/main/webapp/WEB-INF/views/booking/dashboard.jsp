@@ -76,6 +76,42 @@
       </c:choose>
     </div>
 
+    <!-- ============ UPCOMING BOOKINGS (paid, pickup date still ahead) ============ -->
+    <h5 class="fw-bold mb-3" data-aos="fade-up">Upcoming Bookings</h5>
+    <div class="glass-card p-3 mb-5" data-aos="fade-up">
+      <c:choose>
+        <c:when test="${empty upcomingBookings}">
+          <div class="empty-state">
+            <i class="fa-solid fa-calendar-days"></i>
+            <h5>No upcoming bookings</h5>
+            <p>Paid bookings with a future pickup date will show up here right after payment.</p>
+          </div>
+        </c:when>
+        <c:otherwise>
+          <table class="table table-glass align-middle mb-0">
+            <thead>
+              <tr><th>Vehicle</th><th>Renter</th><th>Pickup Date</th><th>Return Date</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+              <c:forEach var="b" items="${upcomingBookings}">
+                <tr>
+                  <td>${b.vehicleBrand} ${b.vehicleModel} <span class="text-soft">(${b.vehicleNumber})</span></td>
+                  <td>${b.renterName}</td>
+                  <td>${b.startDate} <span class="badge badge-available ms-1">Upcoming</span></td>
+                  <td>${b.endDate}</td>
+                  <td>
+                    <a href="${pageContext.request.contextPath}/booking/booking-details?id=${b.bookingId}" target="_blank" class="btn btn-sm btn-outline-glass">
+                      <i class="fa-solid fa-eye me-1"></i>See Details
+                    </a>
+                  </td>
+                </tr>
+              </c:forEach>
+            </tbody>
+          </table>
+        </c:otherwise>
+      </c:choose>
+    </div>
+
     <!-- ============ CURRENTLY OUT — CONFIRM RETURN ============ -->
     <h5 class="fw-bold mb-3" data-aos="fade-up">Currently Out — Due Back</h5>
     <div class="glass-card p-3" data-aos="fade-up">

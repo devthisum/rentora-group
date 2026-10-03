@@ -108,6 +108,18 @@ public class BookingDAOImpl implements BookingDAO {
     }
 
     @Override
+    public List<Booking> findUpcomingPaid() throws Exception {
+        List<Booking> list = new ArrayList<>();
+        try (Connection conn = connectionManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                     BASE_SELECT + " WHERE b.status = 'CONFIRMED' AND b.start_date > CURDATE() ORDER BY b.start_date ASC");
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) list.add(mapRow(rs));
+        }
+        return list;
+    }
+
+    @Override
     public List<Booking> findActiveByVehicle(long vehicleId) throws Exception {
         List<Booking> list = new ArrayList<>();
         try (Connection conn = connectionManager.getConnection();

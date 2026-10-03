@@ -9,6 +9,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -42,5 +46,26 @@ public final class ImageUploadUtil {
         }
 
         return contextPath + "/" + uploadSubpath + "/" + fileName;
+    }
+
+    private static final Set<String> IMAGE_EXTENSIONS = Set.of(".jpg", ".jpeg", ".png", ".webp", ".gif");
+
+    /**
+     * Saves every non-empty image part named {@code fieldName} (a multi-file input) and
+     * returns their URLs. Non-image files are skipped rather than stored.
+     */
+    public static List<String> saveAll(Collection<Part> parts, String fieldName, ServletContext context,
+                                       String contextPath, String subfolder) throws IOException {
+        List<String> urls = new ArrayList<>();
+        for (Part part : parts) {
+            if (!fieldName.equals(part.getName()) || part.getSize() == 0) continue;
+            String name = part.getSubmittedFileName() == null ? "" : part.getSubmittedFileName().toLowerCase();
+            String ct = part.getContentType() == null ? "" : part.getContentType();
+            boolean okExt = IMAGE_EXTENSIONS.stream().anyMatch(name::endsWith);
+            if (!ct.startsWith("image/") || !okExt) continue;
+            String url = saveIfPresent(part, context, contextPath, subfolder);
+            if (url != null) urls.add(url);
+        }
+        return urls;
     }
 }

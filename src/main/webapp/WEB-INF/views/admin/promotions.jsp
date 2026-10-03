@@ -59,7 +59,17 @@
               </td>
             </tr>
 
-            <!-- Edit modal for this promotion -->
+          </c:forEach>
+          <c:if test="${empty promotions}">
+            <tr><td colspan="7" class="text-secondary text-center py-4">No promotions created yet.</td></tr>
+          </c:if>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Edit modals live OUTSIDE the table/glass-card so backdrop-filter/transform
+         on the card cannot trap or clip the fixed-position modal -->
+    <c:forEach var="p" items="${promotions}">
             <div class="modal fade" id="editPromo${p.promotionId}" tabindex="-1">
               <div class="modal-dialog">
                 <div class="modal-content">
@@ -117,15 +127,14 @@
                 </div>
               </div>
             </div>
-          </c:forEach>
-          <c:if test="${empty promotions}">
-            <tr><td colspan="7" class="text-secondary text-center py-4">No promotions created yet.</td></tr>
-          </c:if>
-        </tbody>
-      </table>
-    </div>
+    </c:forEach>
   </section>
 
   <jsp:include page="/WEB-INF/views/common/footer.jsp" />
+
+  <script>
+    // Re-parent modals to <body> so they sit above the backdrop and are never clipped by ancestors
+    document.querySelectorAll('.modal[id^="editPromo"]').forEach(function (m) { document.body.appendChild(m); });
+  </script>
 </body>
 </html>

@@ -2,6 +2,7 @@ package com.rentora.controller.admin;
 
 import com.rentora.exception.ValidationException;
 import com.rentora.model.Vehicle;
+import com.rentora.service.VehicleImageService;
 import com.rentora.service.VehicleService;
 import com.rentora.util.ImageUploadUtil;
 import jakarta.servlet.ServletException;
@@ -18,10 +19,11 @@ import java.util.Optional;
 
 /** Admin edits a vehicle's details directly — no approval workflow. */
 @WebServlet("/admin/vehicles/edit")
-@MultipartConfig(maxFileSize = 10 * 1024 * 1024) // 10MB per photo
+@MultipartConfig(maxFileSize = 10 * 1024 * 1024, maxRequestSize = 60 * 1024 * 1024) // 10MB per photo
 public class AdminEditVehicleServlet extends HttpServlet {
 
     private final VehicleService vehicleService = new VehicleService();
+    private final VehicleImageService imageService = new VehicleImageService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -33,6 +35,7 @@ public class AdminEditVehicleServlet extends HttpServlet {
                 return;
             }
             req.setAttribute("vehicle", vehicle.get());
+            req.setAttribute("galleryRows", imageService.getGalleryRows(id));
         } catch (Exception e) {
             req.setAttribute("errorMessage", "Could not load this vehicle.");
         }
@@ -68,6 +71,15 @@ public class AdminEditVehicleServlet extends HttpServlet {
             changes.setImageUrl(uploadedUrl != null ? uploadedUrl : req.getParameter("imageUrl"));
 
             vehicleService.updateVehicle(changes);
+
+            // Gallery: keep the primary row in step with the cover, drop ticked photos, add new ones.
+            long vid = changes.getVehicleId();
+            imageService.syncPrimary(vid, changes.getImageUrl());
+            imageService.removeImages(vid, req.getParameterValues("removeImageIds"));
+            java.util.List<String> extras = new java.util.ArrayList<>(
+                    ImageUploadUtil.saveAll(req.getParts(), "galleryFiles", getServletContext(), req.getContextPath(), "vehicles"));
+            extras.addAll(VehicleImageService.parseUrls(req.getParameter("extraImageUrls")));
+            imageService.addExtraImages(vid, extras);
             req.getSession().setAttribute("successMessage", "Vehicle updated.");
             resp.sendRedirect(req.getContextPath() + "/admin/vehicles");
 

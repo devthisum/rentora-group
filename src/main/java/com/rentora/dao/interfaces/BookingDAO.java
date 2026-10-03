@@ -14,6 +14,8 @@ public interface BookingDAO {
     List<Booking> findActiveOrderedByReturn() throws Exception;
     /** Paid (CONFIRMED) bookings whose pickup date has arrived or passed but the customer hasn't been checked in — feeds the Booking Staff dashboard. */
     List<Booking> findPickupsDue() throws Exception;
+    /** Paid (CONFIRMED) bookings whose pickup date is still in the future — feeds the Booking Staff "Upcoming Bookings" list. */
+    List<Booking> findUpcomingPaid() throws Exception;
     /** All not-yet-finished bookings (AWAITING_PAYMENT/CONFIRMED/ONGOING) for one vehicle — feeds the booking calendar. */
     List<Booking> findActiveByVehicle(long vehicleId) throws Exception;
     /** Bookings still AWAITING_PAYMENT that were created before the given cutoff — used by the auto-cancel job. */

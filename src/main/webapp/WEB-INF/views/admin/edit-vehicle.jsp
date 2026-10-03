@@ -117,6 +117,32 @@
           </div>
 
           <div class="mb-3">
+            <label class="form-label small d-block">Gallery Photos</label>
+            <c:set var="hasExtras" value="false" />
+            <div class="d-flex flex-wrap gap-3 mb-2">
+              <c:forEach var="g" items="${galleryRows}">
+                <c:if test="${!g.primary}">
+                  <c:set var="hasExtras" value="true" />
+                  <label class="text-center small" style="cursor:pointer;">
+                    <img src="${g.imageUrl}" alt="" style="width:96px;height:72px;object-fit:cover;border-radius:10px;display:block;">
+                    <input type="checkbox" name="removeImageIds" value="${g.imageId}" class="form-check-input mt-1"> Remove
+                  </label>
+                </c:if>
+              </c:forEach>
+              <c:if test="${hasExtras == 'false'}"><span class="text-soft small">No extra photos yet.</span></c:if>
+            </div>
+            <label class="form-label small d-block">Add More Photos</label>
+            <input type="file" name="galleryFiles" id="galleryFiles" accept="image/*" multiple class="form-control form-control-glass">
+            <small class="text-soft">Select several at once (up to 10 per vehicle including the cover). Tick "Remove" above to delete a photo.</small>
+            <div id="galleryPreview" class="d-flex flex-wrap gap-2 mt-2"></div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small">…or more image URLs</label>
+            <textarea name="extraImageUrls" rows="2" placeholder="One https:// link per line" class="form-control form-control-glass"></textarea>
+          </div>
+
+          <div class="mb-3">
             <label class="form-label small">Description</label>
             <textarea name="description" rows="3" class="form-control form-control-glass">${vehicle.description}</textarea>
           </div>
@@ -132,6 +158,18 @@
 
   <script src="${pageContext.request.contextPath}/assets/js/vehicle-brands.js"></script>
   <script>
+
+    const galleryFiles = document.getElementById('galleryFiles');
+    const galleryPreview = document.getElementById('galleryPreview');
+    galleryFiles.addEventListener('change', () => {
+      galleryPreview.innerHTML = '';
+      Array.from(galleryFiles.files).slice(0, 10).forEach(f => {
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(f);
+        img.style.cssText = 'width:80px;height:64px;object-fit:cover;border-radius:8px;';
+        galleryPreview.appendChild(img);
+      });
+    });
     const imageFile = document.getElementById('imageFile');
     const imagePreview = document.getElementById('imagePreview');
     imageFile.addEventListener('change', () => {

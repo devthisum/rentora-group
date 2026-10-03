@@ -144,6 +144,16 @@ public class BookingService {
     }
 
     /**
+     * Every paid booking whose pickup date is still ahead (e.g. booked today
+     * for tomorrow). Shown on the Booking Staff desk the moment payment
+     * completes, so staff can prepare — they move into "Today's Pickups"
+     * automatically once the pickup date arrives.
+     */
+    public List<Booking> getUpcomingBookings() throws Exception {
+        return bookingDAO.findUpcomingPaid();
+    }
+
+    /**
      * Booking Staff confirms the customer has physically shown up and taken
      * the vehicle. This is the moment the vehicle actually becomes
      * unavailable on the shop floor — a paid-but-not-yet-picked-up (CONFIRMED)

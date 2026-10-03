@@ -101,7 +101,7 @@
               </div>
               <div class="mb-3 flex-fill">
                 <label class="form-label small">CVV</label>
-                <input type="text" class="form-control form-control-glass" placeholder="123" maxlength="4">
+                <input type="text" id="cvvInput" class="form-control form-control-glass" placeholder="123" maxlength="4">
               </div>
             </div>
 
@@ -110,7 +110,7 @@
           <div id="walletFields" style="display:none;">
             <div class="mb-3">
               <label class="form-label small">Wallet PIN</label>
-              <input type="password" class="form-control form-control-glass" placeholder="Enter your 4-digit PIN" maxlength="4">
+              <input type="password" id="walletPinInput" class="form-control form-control-glass" placeholder="Enter your 4-digit PIN" maxlength="4">
             </div>
           </div>
 
@@ -130,6 +130,7 @@
   <jsp:include page="/WEB-INF/views/common/footer.jsp" />
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="${pageContext.request.contextPath}/assets/js/card-validation.js"></script>
   <script>
     document.getElementById('payCard').addEventListener('change', toggleFields);
     document.getElementById('payWallet').addEventListener('change', toggleFields);
@@ -142,19 +143,37 @@
     if (savedSelect) {
       savedSelect.addEventListener('change', function() {
         var opt = savedSelect.selectedOptions[0];
-        if (!opt.value) return; // "Enter details manually"
+        var numEl = document.getElementById('cardNumberInput');
+        var expEl = document.getElementById('expiryInput');
+        if (!opt.value) {                       // "Enter details manually" -> unlock and clear
+          numEl.readOnly = false; expEl.readOnly = false;
+          numEl.value = ''; expEl.value = '';
+          [numEl, expEl].forEach(function (el) { el.classList.remove('is-invalid'); });
+          return;
+        }
         if (opt.value === 'WALLET') {
           document.getElementById('payWallet').checked = true;
         } else {
           document.getElementById('payCard').checked = true;
-          var numEl = document.getElementById('cardNumberInput');
-          var expEl = document.getElementById('expiryInput');
-          if (numEl) numEl.value = opt.dataset.masked || '';
-          if (expEl) expEl.value = opt.dataset.expiry || '';
+          // saved cards only keep the masked number + expiry, so those stay read-only
+          if (numEl) { numEl.value = opt.dataset.masked || ''; numEl.readOnly = true; }
+          if (expEl) { expEl.value = opt.dataset.expiry || ''; expEl.readOnly = true; }
         }
         toggleFields();
       });
     }
+
+    // ---- Card / wallet input validation ----
+    if (document.getElementById('paymentForm')) RentoraCardValidation.init({
+      form: document.getElementById('paymentForm'),
+      cardRadio: document.getElementById('payCard'),
+      walletRadio: document.getElementById('payWallet'),
+      savedSelect: savedSelect,
+      number: document.getElementById('cardNumberInput'),
+      expiry: document.getElementById('expiryInput'),
+      cvv: document.getElementById('cvvInput'),
+      pin: document.getElementById('walletPinInput')
+    });
 
     // ---- 10-minute payment countdown ----
     <c:if test="${not empty booking}">
