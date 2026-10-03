@@ -7,6 +7,10 @@ import com.rentora.dao.interfaces.VehicleDAO;
 import com.rentora.exception.ValidationException;
 import com.rentora.model.Promotion;
 import com.rentora.model.Vehicle;
+import com.rentora.observer.NotificationEvent;
+import com.rentora.observer.NotificationSubject;
+import com.rentora.dao.impl.WishlistDAOImpl;
+import com.rentora.dao.interfaces.WishlistDAO;
 import com.rentora.util.ValidationUtil;
 
 import java.math.BigDecimal;
@@ -21,6 +25,17 @@ public class PromotionService {
 
     private final PromotionDAO promotionDAO = new PromotionDAOImpl();
     private final VehicleDAO vehicleDAO = new VehicleDAOImpl();
+    private final WishlistDAO wishlistDAO = new WishlistDAOImpl();
+
+    /** Observer Pattern: fires "price drop" events to renters who wishlisted the vehicle. May be null (no alerts). */
+    private final NotificationSubject notificationSubject;
+
+    /** For read-only uses (display, pricing) — no notifications are sent. */
+    public PromotionService() { this(null); }
+
+    public PromotionService(NotificationSubject notificationSubject) {
+        this.notificationSubject = notificationSubject;
+    }
 
     public long createPromotion(long vehicleId, String title, String description, String discountType,
                                  BigDecimal discountValue, LocalDate startDate, LocalDate endDate,
@@ -40,7 +55,46 @@ public class PromotionService {
         promotion.setStatus("ACTIVE");
         promotion.setCreatedBy(staffUserId);
 
-        return promotionDAO.create(promotion);
+        long id = promotionDAO.create(promotion);
+        notifyWishlisters(vehicle, promotion);
+        return id;
+    }
+
+    /**
+     * Tells every renter who wishlisted this vehicle that it just got a deal. Goes through the
+     * Observer subject, so the in-app bell and the email channel both react without this class
+     * knowing how either one delivers. Never allowed to break promotion creation.
+     */
+    private void notifyWishlisters(Vehicle vehicle, Promotion promotion) {
+        if (notificationSubject == null) return;
+        try {
+            BigDecimal discounted = promotion.applyTo(vehicle.getPricePerDay());
+            String when = promotion.getStartDate().isAfter(LocalDate.now())
+                    ? "starts " + promotion.getStartDate() + " and ends " + promotion.getEndDate()
+                    : "ends " + promotion.getEndDate();
+            String message = vehicle.getBrand() + " " + vehicle.getModel() + " on your wishlist is now Rs. "
+                    + discounted.stripTrailingZeros().toPlainString() + "/day (was Rs. "
+                    + vehicle.getPricePerDay().stripTrailingZeros().toPlainString() + "). \""
+                    + promotion.getTitle() + "\" " + when + ".";
+            for (long renterId : wishlistDAO.findRenterIdsByVehicle(vehicle.getVehicleId())) {
+                notificationSubject.notifyAll(new NotificationEvent(renterId, "Price drop on your wishlist", message));
+            }
+        } catch (Exception e) {
+            System.err.println("Wishlist promotion alert failed: " + e.getMessage());
+        }
+    }
+
+    /** Vehicles with an active promotion right now (not archived), biggest discount first. */
+    public List<Vehicle> getHotDeals(int limit) throws Exception {
+        List<Vehicle> deals = vehicleDAO.findAll().stream()
+                .filter(v -> !v.isArchived())
+                .collect(Collectors.toList());
+        applyActivePromotions(deals);
+        return deals.stream()
+                .filter(Vehicle::isHasPromotion)
+                .sorted(java.util.Comparator.comparingInt(Vehicle::getDiscountPercent).reversed())
+                .limit(limit)
+                .collect(Collectors.toList());
     }
 
     public void updatePromotion(long promotionId, String title, String description, String discountType,
@@ -111,7 +165,18 @@ public class PromotionService {
             if (promo != null) {
                 v.setHasPromotion(true);
                 v.setPromotionTitle(promo.getTitle());
-                v.setDiscountedPrice(promo.applyTo(v.getPricePerDay()));
+                BigDecimal discounted = promo.applyTo(v.getPricePerDay());
+                v.setDiscountedPrice(discounted);
+                v.setPromotionDescription(promo.getDescription());
+                v.setPromotionEndDate(promo.getEndDate());
+                // the promotion runs through the END of its last day
+                v.setPromotionEndMillis(promo.getEndDate().atTime(23, 59, 59)
+                        .atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli());
+                if (v.getPricePerDay() != null && v.getPricePerDay().signum() > 0) {
+                    v.setDiscountPercent(v.getPricePerDay().subtract(discounted)
+                            .multiply(new BigDecimal("100"))
+                            .divide(v.getPricePerDay(), 0, java.math.RoundingMode.HALF_UP).intValue());
+                }
             }
         }
     }

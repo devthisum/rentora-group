@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib uri="jakarta.tags.core" prefix="c" %>
+<%@ taglib prefix="rt" tagdir="/WEB-INF/tags" %>
 <%@ taglib uri="jakarta.tags.functions" prefix="fn" %>
 <!DOCTYPE html>
 <html lang="en">
@@ -155,11 +156,14 @@
       <div class="glass-card p-4" id="booking-box" data-aos="fade-up" style="position:sticky; top:6.5rem; scroll-margin-top:6.5rem;">
         <c:choose>
           <c:when test="${vehicle.hasPromotion}">
-            <div class="badge badge-active text-uppercase mb-2 d-inline-block"><i class="fa-solid fa-tag me-1"></i>${vehicle.promotionTitle}</div>
-            <h4 class="fw-bold mb-1">
-              Rs. ${vehicle.discountedPrice} <span class="text-secondary fs-6">/ day</span>
-              <span class="text-secondary fs-6" style="text-decoration:line-through; opacity:.6;">Rs. ${vehicle.pricePerDay}</span>
-            </h4>
+            <div class="promo-banner">
+              <div class="promo-banner-title"><i class="fa-solid fa-tag me-1"></i>${vehicle.promotionTitle}<c:if test="${vehicle.discountPercent > 0}"> &middot; ${vehicle.discountPercent}% off</c:if></div>
+              <c:if test="${not empty vehicle.promotionDescription}"><p>${vehicle.promotionDescription}</p></c:if>
+              <p>Valid until ${vehicle.promotionEndDate}.</p>
+              <span class="promo-countdown promo-countdown-inline" data-promo-end="${vehicle.promotionEndMillis}"><i class="fa-regular fa-clock"></i><span class="promo-countdown-text">Ends ${vehicle.promotionEndDate}</span></span>
+            </div>
+            <div class="mb-1"><span class="promo-price-old fs-6">Rs. ${vehicle.pricePerDay}</span> <span class="promo-price-new" style="font-size:1.8rem;">Rs. ${vehicle.discountedPrice}</span> <span class="text-secondary fs-6">/ day</span></div>
+            <div class="promo-save mb-2"><i class="fa-solid fa-piggy-bank me-1"></i>You save Rs. ${vehicle.savingsPerDay} per day. The discount is applied to your booking total.</div>
           </c:when>
           <c:otherwise>
             <h4 class="fw-bold mb-1">Rs. ${vehicle.pricePerDay} <span class="text-secondary fs-6">/ day</span></h4>
@@ -231,6 +235,7 @@
           <a href="${pageContext.request.contextPath}/vehicle-details?id=${rv.vehicleId}" class="glass-card vehicle-card related-vehicle-card" data-aos="fade-up" data-aos-delay="${rs.index * 75}">
             <div class="vehicle-img">
               <img src="${not empty rv.imageUrl ? rv.imageUrl : 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=600'}" alt="${rv.brand} ${rv.model}">
+              <rt:promoRibbon vehicle="${rv}" />
             </div>
             <div class="p-3">
               <h6 class="mb-1" style="font-family:var(--font-serif);font-weight:700;">${rv.brand} ${rv.model}</h6>
@@ -239,15 +244,7 @@
                   <i class="fa-solid fa-star${s <= rv.averageRating ? '' : ' dim'}"></i>
                 </c:forEach>
               </div>
-              <c:choose>
-                <c:when test="${rv.hasPromotion}">
-                  <div class="price-pill"><span class="amount">Rs. ${rv.discountedPrice}</span><span class="unit">per day</span></div>
-                  <div class="badge badge-active text-uppercase mt-1" style="font-size:.65rem;"><i class="fa-solid fa-tag me-1"></i>Deal</div>
-                </c:when>
-                <c:otherwise>
-                  <div class="price-pill"><span class="amount">Rs. ${rv.pricePerDay}</span><span class="unit">per day</span></div>
-                </c:otherwise>
-              </c:choose>
+              <rt:promoPrice vehicle="${rv}" />
             </div>
           </a>
         </c:forEach>

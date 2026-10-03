@@ -20,9 +20,11 @@ document.addEventListener('DOMContentLoaded', function () {
             const html = document.documentElement;
             if (html.getAttribute('data-theme') === 'dark') {
                 html.removeAttribute('data-theme');
+                html.setAttribute('data-bs-theme', 'light');
                 window.localStorage.setItem('rentora_theme', 'light');
             } else {
                 html.setAttribute('data-theme', 'dark');
+                html.setAttribute('data-bs-theme', 'dark'); // Bootstrap's own components (alerts, dropdowns, tables...) go dark too
                 window.localStorage.setItem('rentora_theme', 'dark');
             }
             syncThemeIcon();
@@ -434,3 +436,31 @@ document.addEventListener('DOMContentLoaded', function () {
 
     counters.forEach(function (el) { io.observe(el); });
 });
+
+// ---- Promotion countdowns: any element with data-promo-end (epoch ms) shows "Ends in 3d 4h" and
+//      turns red inside the final 24 hours. Pure display — the server decides what's actually active. ----
+(function () {
+    function label(ms) {
+        if (ms <= 0) return 'Deal ended';
+        var s = Math.floor(ms / 1000), d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600),
+            m = Math.floor(s % 3600 / 60), sec = s % 60;
+        if (d > 0) return 'Ends in ' + d + 'd ' + h + 'h';
+        if (h > 0) return 'Ends in ' + h + 'h ' + m + 'm';
+        return 'Ends in ' + m + 'm ' + sec + 's';
+    }
+    function tick() {
+        document.querySelectorAll('[data-promo-end]').forEach(function (el) {
+            var end = parseInt(el.getAttribute('data-promo-end'), 10);
+            if (!end) return;
+            var left = end - Date.now();
+            var text = el.querySelector('.promo-countdown-text');
+            if (text) text.textContent = label(left);
+            el.classList.toggle('hot', left < 86400000);
+        });
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+        if (!document.querySelector('[data-promo-end]')) return;
+        tick();
+        setInterval(tick, 1000);
+    });
+})();

@@ -5,6 +5,7 @@ import java.util.List;
 
 /** Base Vehicle entity (shop stock — added by admin). Subclassed per category by VehicleFactory. */
 public class Vehicle {
+    private boolean archived;
     private long vehicleId;
     private int categoryId;
     private String categoryName;
@@ -85,6 +86,26 @@ public class Vehicle {
     private String promotionTitle;
     private java.math.BigDecimal discountedPrice;
 
+    private int discountPercent;                 // whole-number % off, for the ribbon (e.g. 20)
+    private long promotionEndMillis;             // end of the promotion's last day, epoch ms — drives the countdown
+    private java.time.LocalDate promotionEndDate;
+    private String promotionDescription;
+
+    public int getDiscountPercent() { return discountPercent; }
+    public void setDiscountPercent(int discountPercent) { this.discountPercent = discountPercent; }
+    public long getPromotionEndMillis() { return promotionEndMillis; }
+    public void setPromotionEndMillis(long promotionEndMillis) { this.promotionEndMillis = promotionEndMillis; }
+    public java.time.LocalDate getPromotionEndDate() { return promotionEndDate; }
+    public void setPromotionEndDate(java.time.LocalDate promotionEndDate) { this.promotionEndDate = promotionEndDate; }
+    public String getPromotionDescription() { return promotionDescription; }
+    public void setPromotionDescription(String promotionDescription) { this.promotionDescription = promotionDescription; }
+
+    /** How much a renter saves per day with the active promotion (0 when there is none). */
+    public java.math.BigDecimal getSavingsPerDay() {
+        if (!hasPromotion || discountedPrice == null || pricePerDay == null) return java.math.BigDecimal.ZERO;
+        return pricePerDay.subtract(discountedPrice).max(java.math.BigDecimal.ZERO);
+    }
+
     public boolean isHasPromotion() { return hasPromotion; }
     public void setHasPromotion(boolean hasPromotion) { this.hasPromotion = hasPromotion; }
 
@@ -131,6 +152,9 @@ public class Vehicle {
      * (they're only ever set the moment a vehicle is physically returned),
      * so those pass through unchanged.
      */
+    public boolean isArchived() { return archived; }
+    public void setArchived(boolean archived) { this.archived = archived; }
+
     public String getDisplayStatus() {
         if ("CHECKING".equals(status) || "MAINTENANCE".equals(status)) {
             return status;

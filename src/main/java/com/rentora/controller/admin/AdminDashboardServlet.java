@@ -35,7 +35,7 @@ public class AdminDashboardServlet extends HttpServlet {
         User admin = session != null ? (User) session.getAttribute("user") : null;
 
         try {
-            List<Vehicle> allVehicles = vehicleService.getAll();
+            List<Vehicle> allVehicles = vehicleService.getAllActive(); // fleet figures ignore archived stock
             List<Booking> allBookings = bookingService.getAll();
 
             // Fleet status counts — uses getDisplayStatus() (Available/Booked/Checking/Maintenance),

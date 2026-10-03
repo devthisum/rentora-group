@@ -59,4 +59,10 @@ public class AdminPromotionServlet extends HttpServlet {
                     java.net.URLEncoder.encode(e.getMessage() != null ? e.getMessage() : "Something went wrong.", "UTF-8"));
         }
     }
+
+    /** The app-wide PromotionService wired to the Observer subject, so creating a deal alerts wishlisters. */
+    private PromotionService sharedPromotionService() {
+        PromotionService shared = (PromotionService) getServletContext().getAttribute("promotionService");
+        return shared != null ? shared : promotionService;
+    }
 }

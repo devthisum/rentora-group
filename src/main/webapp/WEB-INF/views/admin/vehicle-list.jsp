@@ -22,6 +22,12 @@
       <c:remove var="errorMessage" scope="session" />
     </c:if>
 
+    <div class="vehicle-view-tabs mb-3" data-aos="fade-up">
+      <a href="${pageContext.request.contextPath}/admin/vehicles?view=active" class="vehicle-view-tab ${view == 'active' ? 'active' : ''}">Active <span class="count">${activeCount}</span></a>
+      <a href="${pageContext.request.contextPath}/admin/vehicles?view=archived" class="vehicle-view-tab ${view == 'archived' ? 'active' : ''}">Archived <span class="count">${archivedCount}</span></a>
+      <a href="${pageContext.request.contextPath}/admin/vehicles?view=all" class="vehicle-view-tab ${view == 'all' ? 'active' : ''}">All</a>
+    </div>
+
     <div class="glass-card p-3" data-aos="fade-up">
       <table class="table table-glass align-middle mb-0">
         <thead>
@@ -32,11 +38,16 @@
         <tbody>
           <c:forEach var="v" items="${vehicles}">
             <tr>
-              <td>${v.brand} ${v.model} (${v.year})</td>
+              <td>
+                ${v.brand} ${v.model} (${v.year})
+                <c:if test="${v.archived}"><span class="badge badge-archived text-uppercase ms-1">Archived</span></c:if>
+              </td>
               <td>${v.vehicleNumber}</td>
               <td>${v.categoryName}</td>
               <td>Rs. ${v.pricePerDay}</td>
               <td>
+                <c:if test="${v.archived}"><span class="text-soft small">Hidden from customers</span></c:if>
+                <c:if test="${!v.archived}">
                 <form method="post" action="${pageContext.request.contextPath}/admin/vehicles/status" class="status-inline-form">
                   <input type="hidden" name="vehicleId" value="${v.vehicleId}">
                   <select name="status" class="form-select form-select-sm status-inline-select status-${v.displayStatus.toLowerCase()}" onchange="handleStatusChange(this)">
@@ -48,19 +59,43 @@
                     </c:if>
                   </select>
                 </form>
+                </c:if>
               </td>
               <td>
                 <a href="${pageContext.request.contextPath}/admin/vehicles/edit?id=${v.vehicleId}" class="btn btn-sm btn-outline-glass">Edit</a>
+                <c:choose>
+                  <c:when test="${v.archived}">
+                    <form method="post" action="${pageContext.request.contextPath}/admin/vehicles/archive" class="d-inline"
+                          onsubmit="return confirm('Restore this vehicle? Customers will be able to see and book it again.');">
+                      <input type="hidden" name="action" value="restore">
+                      <input type="hidden" name="vehicleId" value="${v.vehicleId}">
+                      <button class="btn btn-sm btn-outline-glass"><i class="fa-solid fa-rotate-left me-1"></i>Restore</button>
+                    </form>
+                  </c:when>
+                  <c:otherwise>
+                    <form method="post" action="${pageContext.request.contextPath}/admin/vehicles/archive" class="d-inline"
+                          onsubmit="return confirm('Archive this vehicle? It will be hidden from customers but all its booking history is kept. You can restore it later.');">
+                      <input type="hidden" name="action" value="archive">
+                      <input type="hidden" name="vehicleId" value="${v.vehicleId}">
+                      <button class="btn btn-sm btn-outline-glass"><i class="fa-solid fa-box-archive me-1"></i>Archive</button>
+                    </form>
+                  </c:otherwise>
+                </c:choose>
                 <form method="post" action="${pageContext.request.contextPath}/admin/vehicles/delete" class="d-inline"
-                      onsubmit="return confirm('Remove this vehicle from stock?');">
+                      onsubmit="return confirm('Permanently delete this vehicle? This only works for vehicles with no booking history — otherwise use Archive.');">
                   <input type="hidden" name="vehicleId" value="${v.vehicleId}">
-                  <button class="btn btn-sm btn-outline-glass text-danger">Remove</button>
+                  <button class="btn btn-sm btn-outline-glass text-danger">Delete</button>
                 </form>
               </td>
             </tr>
           </c:forEach>
           <c:if test="${empty vehicles}">
-            <tr><td colspan="6" class="text-secondary text-center py-4">No vehicles in stock yet. Add your first one!</td></tr>
+            <tr><td colspan="6" class="text-secondary text-center py-4">
+              <c:choose>
+                <c:when test="${view == 'archived'}">No archived vehicles.</c:when>
+                <c:otherwise>No vehicles here yet. Add your first one!</c:otherwise>
+              </c:choose>
+            </td></tr>
           </c:if>
         </tbody>
       </table>

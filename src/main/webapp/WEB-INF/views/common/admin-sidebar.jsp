@@ -1,3 +1,4 @@
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib uri="jakarta.tags.core" prefix="c" %>
 <%@ taglib uri="jakarta.tags.functions" prefix="fn" %>
 
@@ -15,6 +16,10 @@
         <a href="${pageContext.request.contextPath}/admin/dashboard"
            class="admin-sidebar-link ${fn:contains(pageContext.request.requestURI, '/admin/dashboard') ? 'active' : ''}">
           <i class="fa-solid fa-gauge"></i><span>Admin Dashboard</span>
+        </a>
+        <a href="${pageContext.request.contextPath}/admin/reports"
+           class="admin-sidebar-link ${fn:contains(pageContext.request.requestURI, '/admin/reports') ? 'active' : ''}">
+          <i class="fa-solid fa-chart-line"></i><span>Reports</span>
         </a>
         <a href="${pageContext.request.contextPath}/admin/vehicles"
            class="admin-sidebar-link ${fn:contains(pageContext.request.requestURI, '/admin/vehicles') ? 'active' : ''}">

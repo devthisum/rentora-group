@@ -37,6 +37,14 @@ public class VehicleDetailsServlet extends HttpServlet {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Vehicle not found.");
                 return;
             }
+            // Archived vehicles are retired — only admin may still open the page.
+            HttpSession viewer = req.getSession(false);
+            User viewingUser = viewer != null ? (User) viewer.getAttribute("user") : null;
+            boolean isAdmin = viewingUser != null && "ADMIN".equalsIgnoreCase(viewingUser.getRoleName());
+            if (vehicle.get().isArchived() && !isAdmin) {
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Vehicle not found.");
+                return;
+            }
             req.setAttribute("vehicle", vehicle.get());
             promotionService.applyActivePromotion(vehicle.get());
             req.setAttribute("galleryImages", vehicleImageService.getGallery(id));
@@ -55,7 +63,7 @@ public class VehicleDetailsServlet extends HttpServlet {
     /** Up to 4 other AVAILABLE vehicles in the same category, for the "You might also like" strip. */
     private List<Vehicle> getRelatedVehicles(Vehicle current) {
         try {
-            return vehicleService.getAll().stream()
+            return vehicleService.getAllActive().stream()
                     .filter(v -> v.getVehicleId() != current.getVehicleId())
                     .filter(v -> v.getCategoryId() == current.getCategoryId())
                     .filter(v -> "AVAILABLE".equalsIgnoreCase(v.getDisplayStatus()))

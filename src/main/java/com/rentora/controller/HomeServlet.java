@@ -2,6 +2,7 @@ package com.rentora.controller;
 
 import com.rentora.model.User;
 import com.rentora.model.Vehicle;
+import com.rentora.service.PromotionService;
 import com.rentora.service.VehicleService;
 import com.rentora.service.WishlistService;
 import jakarta.servlet.ServletException;
@@ -26,15 +27,23 @@ public class HomeServlet extends HttpServlet {
 
     private final VehicleService vehicleService = new VehicleService();
     private final WishlistService wishlistService = new WishlistService();
+    private final PromotionService promotionService = new PromotionService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             List<Vehicle> approved = vehicleService.search(Collections.emptyMap());
             // Show at most 6 on the homepage teaser grid
-            req.setAttribute("featuredVehicles", approved.size() > 6 ? approved.subList(0, 6) : approved);
+            List<Vehicle> featured = approved.size() > 6 ? approved.subList(0, 6) : approved;
+            promotionService.applyActivePromotions(featured);
+            req.setAttribute("featuredVehicles", featured);
         } catch (Exception e) {
             req.setAttribute("featuredVehicles", Collections.emptyList());
+        }
+        try {
+            req.setAttribute("hotDeals", promotionService.getHotDeals(3));
+        } catch (Exception e) {
+            req.setAttribute("hotDeals", Collections.emptyList());
         }
 
         req.setAttribute("favoritedIds", getFavoritedIds(req));

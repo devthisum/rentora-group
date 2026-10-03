@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib uri="jakarta.tags.core" prefix="c" %>
+<%@ taglib prefix="rt" tagdir="/WEB-INF/tags" %>
 <!DOCTYPE html>
 <html lang="en">
 <head><jsp:include page="/WEB-INF/views/common/head.jsp" /></head>
@@ -50,12 +51,13 @@
       <c:otherwise>
         <div class="wishlist-grid">
           <c:forEach var="v" items="${vehicles}">
-            <div class="glass-card vehicle-card" data-aos="fade-up">
+            <div class="glass-card vehicle-card ${v.hasPromotion ? 'deal' : ''}" data-aos="fade-up">
               <div class="vehicle-img" style="position:relative;">
                 <img src="${not empty v.imageUrl ? v.imageUrl : 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=600'}" alt="${v.brand} ${v.model}">
                 <c:if test="${v.displayStatus != 'AVAILABLE'}">
                   <span class="badge badge-${v.displayStatus.toLowerCase()} text-uppercase" style="position:absolute; top:10px; left:10px;">${v.displayStatus}</span>
                 </c:if>
+                <rt:promoRibbon vehicle="${v}" />
                 <button class="vehicle-heart wishlist-toggle-btn" data-vehicle-id="${v.vehicleId}"
                         data-favorited="true" data-remove-on-unfavorite="true" style="border:none;">
                   <i class="fa-solid fa-heart" style="color:#EF4444;"></i>
@@ -64,17 +66,10 @@
               <div class="p-3">
                 <div class="d-flex justify-content-between align-items-start mb-1">
                   <h5 class="mb-0">${v.brand} ${v.model}</h5>
-                  <c:choose>
-                    <c:when test="${v.hasPromotion}">
-                      <span class="price-tag">Rs. ${v.discountedPrice}/day <span style="text-decoration:line-through; opacity:.6; font-weight:400;">Rs. ${v.pricePerDay}</span></span>
-                    </c:when>
-                    <c:otherwise>
-                      <span class="price-tag">Rs. ${v.pricePerDay}/day</span>
-                    </c:otherwise>
-                  </c:choose>
+                  <rt:promoPrice vehicle="${v}" align="end" />
                 </div>
                 <c:if test="${v.hasPromotion}">
-                  <span class="badge badge-active text-uppercase mb-2 d-inline-block"><i class="fa-solid fa-tag me-1"></i>${v.promotionTitle}</span>
+                  <div class="small fw-semibold mb-1" style="color:var(--accent);"><i class="fa-solid fa-tag me-1"></i>${v.promotionTitle}</div>
                 </c:if>
                 <p class="text-secondary small mb-2">${v.categoryName} &nbsp;|&nbsp; ${v.seats} seats</p>
                 <div class="d-flex justify-content-between align-items-center">

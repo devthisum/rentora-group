@@ -71,6 +71,11 @@ public class VehicleService {
         return vehicleDAO.findAll();
     }
 
+    /** Every vehicle that is NOT archived — for staff screens that should ignore retired stock. */
+    public List<Vehicle> getAllActive() throws Exception {
+        return vehicleDAO.findAll().stream().filter(v -> !v.isArchived()).toList();
+    }
+
     public boolean isAvailable(long vehicleId, java.time.LocalDate start, java.time.LocalDate end) throws Exception {
         if (!ValidationUtil.isValidDateRange(start, end)) {
             throw new ValidationException("Invalid booking date range.");
@@ -78,6 +83,9 @@ public class VehicleService {
         Optional<Vehicle> vehicle = vehicleDAO.findById(vehicleId);
         if (vehicle.isEmpty()) {
             return false;
+        }
+        if (vehicle.get().isArchived()) {
+            return false; // retired from the shop — can't be booked
         }
         String status = vehicle.get().getStatus();
         // Being booked for OTHER dates doesn't make a vehicle unbookable — the
@@ -135,6 +143,47 @@ public class VehicleService {
         if ("BOOKED".equals(status) || "CHECKING".equals(status) || "MAINTENANCE".equals(status)) {
             throw new ValidationException("This vehicle can't be removed while it's booked or in maintenance.");
         }
+        // A vehicle with ANY booking history is referenced by those records, so deleting it would
+        // either fail or wipe history. Archiving keeps the records and hides it from customers.
+        if (vehicleDAO.hasAnyBookings(vehicleId)) {
+            throw new ValidationException("This vehicle has booking history, so it can't be deleted. "
+                    + "Archive it instead — customers won't see it, but all records are kept.");
+        }
         vehicleDAO.delete(vehicleId);
+    }
+
+    /**
+     * Archives a vehicle: hidden from customers, history kept. Blocked while the vehicle is
+     * tied up in a live booking or in the inspection/repair workflow, so nothing is orphaned.
+     */
+    public void archiveVehicle(long vehicleId) throws Exception {
+        Optional<Vehicle> maybeExisting = vehicleDAO.findById(vehicleId);
+        if (maybeExisting.isEmpty()) {
+            throw new ValidationException("Vehicle not found.");
+        }
+        Vehicle v = maybeExisting.get();
+        if (v.isArchived()) {
+            throw new ValidationException("This vehicle is already archived.");
+        }
+        if (vehicleDAO.hasActiveBookings(vehicleId)) {
+            throw new ValidationException("This vehicle has unpaid, upcoming or ongoing bookings. "
+                    + "Let those finish (or cancel them) before archiving it.");
+        }
+        if ("CHECKING".equals(v.getStatus()) || "MAINTENANCE".equals(v.getStatus())) {
+            throw new ValidationException("Finish the inspection/repair first, then archive this vehicle.");
+        }
+        vehicleDAO.setArchived(vehicleId, true);
+    }
+
+    /** Brings an archived vehicle back into the shop's visible stock. */
+    public void restoreVehicle(long vehicleId) throws Exception {
+        Optional<Vehicle> maybeExisting = vehicleDAO.findById(vehicleId);
+        if (maybeExisting.isEmpty()) {
+            throw new ValidationException("Vehicle not found.");
+        }
+        if (!maybeExisting.get().isArchived()) {
+            throw new ValidationException("This vehicle isn't archived.");
+        }
+        vehicleDAO.setArchived(vehicleId, false);
     }
 }

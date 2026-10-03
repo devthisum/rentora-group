@@ -1,3 +1,4 @@
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib uri="jakarta.tags.core" prefix="c" %>
 <%@ taglib uri="jakarta.tags.functions" prefix="fn" %>
 <nav class="navbar navbar-expand-lg navbar-glass" id="mainNav">
@@ -37,6 +38,7 @@
 
         <c:if test="${sessionScope.user.roleName != 'ADMIN' && sessionScope.user.roleName != 'MAINTENANCE' && sessionScope.user.roleName != 'BOOKING'}">
           <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/vehicles">Vehicles</a></li>
+          <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/vehicles?deals=1"><i class="fa-solid fa-fire me-1" style="color:var(--accent);"></i>Deals</a></li>
         </c:if>
 
         <c:choose>

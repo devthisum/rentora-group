@@ -23,6 +23,7 @@
   (function () {
     if (window.localStorage.getItem('rentora_theme') === 'dark') {
       document.documentElement.setAttribute('data-theme', 'dark');
+      document.documentElement.setAttribute('data-bs-theme', 'dark');
     }
   })();
 </script>

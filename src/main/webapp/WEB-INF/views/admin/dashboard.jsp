@@ -18,6 +18,7 @@
       <div class="d-flex gap-2 flex-wrap">
         <a href="${pageContext.request.contextPath}/admin/vehicles/add" class="btn btn-gradient"><i class="fa-solid fa-plus me-1"></i>Add Vehicle</a>
         <a href="${pageContext.request.contextPath}/admin/vehicles" class="btn btn-outline-glass"><i class="fa-solid fa-car me-1"></i>All Vehicles</a>
+        <a href="${pageContext.request.contextPath}/admin/reports" class="btn btn-outline-glass"><i class="fa-solid fa-chart-line me-1"></i>Reports</a>
         <a href="${pageContext.request.contextPath}/admin/staff" class="btn btn-outline-glass"><i class="fa-solid fa-users me-1"></i>Staff</a>
         <a href="${pageContext.request.contextPath}/maintenance/dashboard" class="btn btn-outline-glass"><i class="fa-solid fa-screwdriver-wrench me-1"></i>Maintenance</a>
       </div>
@@ -190,14 +191,19 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script>
     (function () {
-      var accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#FC7D14';
+      function cssVar(n, f) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim() || f; }
+      var accentColor = cssVar('--accent', '#FC7D14');
+      var textColor = cssVar('--ink3', '#8a8f98');
+      var gridColor = cssVar('--line', 'rgba(0,0,0,.05)');
+      var surfaceColor = cssVar('--bg', '#ffffff');
+      var dashCharts = [];
       Chart.defaults.font.family = "'Outfit', sans-serif";
-      Chart.defaults.color = '#8a8f98';
+      Chart.defaults.color = textColor;
 
       // ---- Revenue trend (last 6 months) ----
       var revenueCtx = document.getElementById('revenueChart');
       if (revenueCtx) {
-        new Chart(revenueCtx, {
+        dashCharts.push(new Chart(revenueCtx, {
           type: 'bar',
           data: {
             labels: [<c:forEach var="m" items="${monthLabels}" varStatus="s">'${m}'${s.last ? '' : ','}</c:forEach>],
@@ -212,11 +218,11 @@
           options: {
             plugins: { legend: { display: false } },
             scales: {
-              y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,.05)' } },
-              x: { grid: { display: false } }
+              y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor } },
+              x: { grid: { display: false }, ticks: { color: textColor } }
             }
           }
-        });
+        }));
       }
 
       // ---- Booking status donut ----
@@ -228,7 +234,7 @@
         };
         var labels = [<c:forEach var="e" items="${statusCounts}" varStatus="s">'${e.key}'${s.last ? '' : ','}</c:forEach>];
         var data = [<c:forEach var="e" items="${statusCounts}" varStatus="s">${e.value}${s.last ? '' : ','}</c:forEach>];
-        new Chart(statusCtx, {
+        dashCharts.push(new Chart(statusCtx, {
           type: 'doughnut',
           data: {
             labels: labels,
@@ -236,15 +242,19 @@
               data: data,
               backgroundColor: labels.map(function (l) { return statusColors[l] || '#c9ccd3'; }),
               borderWidth: 2,
-              borderColor: '#fff'
+              borderColor: surfaceColor
             }]
           },
           options: {
-            plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 12, font: { size: 11 } } } },
+            plugins: { legend: { position: 'bottom', labels: { color: textColor, boxWidth: 10, padding: 12, font: { size: 11 } } } },
             cutout: '65%'
           }
-        });
+        }));
       }
+
+      // Theme toggle: simplest reliable way to recolour Chart.js is to rebuild the page's charts.
+      new MutationObserver(function () { location.reload(); })
+        .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     })();
   </script>
 </body>

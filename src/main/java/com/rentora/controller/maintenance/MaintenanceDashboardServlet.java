@@ -46,7 +46,7 @@ public class MaintenanceDashboardServlet extends HttpServlet {
         try {
             req.setAttribute("activeMaintenance", maintenanceService.getActive());
             req.setAttribute("upcomingReturns", bookingService.getActiveOrderedByReturn());
-            req.setAttribute("allVehicles", vehicleService.getAll());
+            req.setAttribute("allVehicles", vehicleService.getAllActive());
         } catch (Exception e) {
             req.setAttribute("errorMessage", "Could not load the maintenance board.");
         }

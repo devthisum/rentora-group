@@ -68,6 +68,8 @@ CREATE TABLE vehicles (
     air_conditioner  ENUM('YES','NO') DEFAULT 'YES',
     mileage          INT,                        -- total distance driven, in km
     features         VARCHAR(500),                -- comma-separated equipment list, e.g. "ABS,Air Bags,Cruise Control"
+    is_archived      BOOLEAN NOT NULL DEFAULT FALSE,  -- hidden from customers, records kept (see migration_vehicle_archive.sql)
+    archived_at      TIMESTAMP NULL,
     created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (category_id) REFERENCES vehicle_categories(category_id),
     FOREIGN KEY (added_by) REFERENCES users(user_id) ON DELETE SET NULL,

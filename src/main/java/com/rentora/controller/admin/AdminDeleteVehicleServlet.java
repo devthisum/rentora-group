@@ -20,9 +20,11 @@ public class AdminDeleteVehicleServlet extends HttpServlet {
             long id = Long.parseLong(req.getParameter("vehicleId"));
             vehicleService.deleteVehicle(id);
             req.getSession().setAttribute("successMessage", "Vehicle removed from stock.");
+        } catch (com.rentora.exception.ValidationException ve) {
+            req.getSession().setAttribute("errorMessage", ve.getMessage());
         } catch (Exception e) {
-            req.getSession().setAttribute("errorMessage",
-                    e.getMessage() != null ? e.getMessage() : "Could not remove this vehicle.");
+            // Never show raw SQL/driver messages to the admin.
+            req.getSession().setAttribute("errorMessage", "Could not remove this vehicle. If it has booking history, archive it instead.");
         }
         resp.sendRedirect(req.getContextPath() + "/admin/vehicles");
     }

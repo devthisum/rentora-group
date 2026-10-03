@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib uri="jakarta.tags.core" prefix="c" %>
+<%@ taglib prefix="rt" tagdir="/WEB-INF/tags" %>
 <%@ taglib uri="jakarta.tags.functions" prefix="fn" %>
 <!DOCTYPE html>
 <html lang="en">
@@ -21,7 +22,7 @@
 
     <!-- ============ CATEGORY PILLS ============ -->
     <div class="vehicle-pill-row" data-aos="fade-up">
-      <a href="${pageContext.request.contextPath}/vehicles" class="filter-btn filter-btn-solid ${empty param.category ? 'active' : ''}">All Vehicles</a>
+      <a href="${pageContext.request.contextPath}/vehicles" class="filter-btn filter-btn-solid ${empty param.category && param.deals != '1' ? 'active' : ''}">All Vehicles</a>
       <a href="${pageContext.request.contextPath}/vehicles?category=Car" class="filter-btn filter-btn-solid ${param.category == 'Car' ? 'active' : ''}"><i class="fa-solid fa-car me-1"></i>Cars</a>
       <a href="${pageContext.request.contextPath}/vehicles?category=SUV" class="filter-btn filter-btn-solid ${param.category == 'SUV' ? 'active' : ''}"><i class="fa-solid fa-car-side me-1"></i>SUVs</a>
       <a href="${pageContext.request.contextPath}/vehicles?category=Luxury" class="filter-btn filter-btn-solid ${param.category == 'Luxury' ? 'active' : ''}"><i class="fa-solid fa-gem me-1"></i>Luxury</a>
@@ -31,6 +32,7 @@
       <a href="${pageContext.request.contextPath}/vehicles?category=Motorcycle" class="filter-btn filter-btn-solid ${param.category == 'Motorcycle' ? 'active' : ''}"><i class="fa-solid fa-motorcycle me-1"></i>Motorcycles</a>
       <a href="${pageContext.request.contextPath}/vehicles?category=ThreeWheeler" class="filter-btn filter-btn-solid ${param.category == 'ThreeWheeler' ? 'active' : ''}"><i class="fa-solid fa-taxi me-1"></i>Three Wheelers</a>
       <a href="${pageContext.request.contextPath}/vehicles?category=Electric+Vehicle" class="filter-btn filter-btn-solid ${param.category == 'Electric Vehicle' ? 'active' : ''}"><i class="fa-solid fa-bolt me-1"></i>Electric</a>
+      <a href="${pageContext.request.contextPath}/vehicles?deals=1" class="filter-btn filter-btn-solid filter-btn-deals ${param.deals == '1' ? 'active' : ''}"><i class="fa-solid fa-tags me-1"></i>Deals</a>
       <button type="button" class="filter-btn filter-btn-outline" data-bs-toggle="collapse" data-bs-target="#moreFilters">
         <i class="fa-solid fa-sliders me-1"></i>More Filters
       </button>
@@ -72,16 +74,16 @@
       <c:when test="${empty vehicles}">
         <div class="empty-state glass-card" data-aos="fade-up">
           <i class="fa-solid fa-car-side"></i>
-          <h5>No vehicles match your search</h5>
-          <p>Try widening your price range, picking a different vehicle type, or clearing your filters.</p>
+          <h5>${param.deals == '1' ? 'No deals right now' : 'No vehicles match your search'}</h5>
+          <p>${param.deals == '1' ? 'New promotions show up here as soon as they go live. Check back soon.' : 'Try widening your price range, picking a different vehicle type, or clearing your filters.'}</p>
           <a href="${pageContext.request.contextPath}/vehicles" class="btn btn-outline-glass mt-3">Clear Filters</a>
         </div>
       </c:when>
       <c:otherwise>
         <div class="fleet-list" id="fleetList">
           <c:forEach var="v" items="${vehicles}" varStatus="loop">
-            <div class="fleet-row ${loop.index % 2 == 1 ? 'fleet-row-alt' : ''}" data-aos="fade-up" data-aos-delay="${loop.index % 4 * 75}">
-              <div class="fleet-row-media">
+            <div class="fleet-row ${loop.index % 2 == 1 ? 'fleet-row-alt' : ''} ${v.hasPromotion ? 'deal' : ''}" data-aos="fade-up" data-aos-delay="${loop.index % 4 * 75}">
+              <div class="fleet-row-media ${v.hasPromotion ? 'has-promo' : ''}">
                 <c:if test="${v.displayStatus != 'AVAILABLE'}">
                   <span class="badge badge-${v.displayStatus.toLowerCase()} text-uppercase vehicle-card-v2-badge">${v.displayStatus}</span>
                 </c:if>
@@ -93,13 +95,13 @@
                   </button>
                 </c:if>
                 <img src="${not empty v.imageUrl ? v.imageUrl : 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=600'}" alt="${v.brand} ${v.model}">
+                <rt:promoRibbon vehicle="${v}" />
               </div>
               <div class="fleet-row-info">
                 <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
                   <div>
-                    <h4 class="fleet-row-title">${v.brand} ${v.model}
-                      <c:if test="${v.hasPromotion}"><span class="badge badge-active text-uppercase ms-1" style="font-size:.62rem; vertical-align:middle;"><i class="fa-solid fa-tag me-1"></i>${v.promotionTitle}</span></c:if>
-                    </h4>
+                    <h4 class="fleet-row-title">${v.brand} ${v.model}</h4>
+                    <c:if test="${v.hasPromotion}"><div class="small fw-semibold" style="color:var(--accent);"><i class="fa-solid fa-tag me-1"></i>${v.promotionTitle}</div></c:if>
                     <div class="rating-stars mt-1">
                       <c:forEach begin="1" end="5" var="s">
                         <i class="fa-solid fa-star${s <= v.averageRating ? '' : ' dim'}"></i>
@@ -107,17 +109,7 @@
                       <span class="text-soft" style="font-size:.72rem;margin-left:3px;">(${v.averageRating})</span>
                     </div>
                   </div>
-                  <c:choose>
-                    <c:when test="${v.hasPromotion}">
-                      <div class="vehicle-card-v2-price fs-5">
-                        Rs. ${v.discountedPrice}<small>per day</small>
-                        <div class="text-secondary" style="text-decoration:line-through; opacity:.6; font-size:.75rem; font-weight:400;">Rs. ${v.pricePerDay}</div>
-                      </div>
-                    </c:when>
-                    <c:otherwise>
-                      <div class="vehicle-card-v2-price fs-5">Rs. ${v.pricePerDay}<small>per day</small></div>
-                    </c:otherwise>
-                  </c:choose>
+                  <rt:promoPrice vehicle="${v}" align="end" />
                 </div>
                 <div class="fleet-row-specs">
                   <span><i class="fa-solid fa-gear"></i>${v.transmission}</span>

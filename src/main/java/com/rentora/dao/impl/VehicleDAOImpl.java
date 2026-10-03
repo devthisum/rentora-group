@@ -84,7 +84,8 @@ public class VehicleDAOImpl implements VehicleDAO {
      */
     @Override
     public List<Vehicle> search(Map<String, String> filters) throws Exception {
-        StringBuilder sql = new StringBuilder(BASE_SELECT + " WHERE 1=1 ");
+        // Archived vehicles are never shown to customers.
+        StringBuilder sql = new StringBuilder(BASE_SELECT + " WHERE v.is_archived = FALSE ");
         List<Object> params = new ArrayList<>();
 
         if (filters.containsKey("category")) {
@@ -223,6 +224,39 @@ public class VehicleDAOImpl implements VehicleDAO {
         }
     }
 
+    @Override
+    public boolean setArchived(long vehicleId, boolean archived) throws Exception {
+        String sql = archived
+                ? "UPDATE vehicles SET is_archived = TRUE, archived_at = CURRENT_TIMESTAMP WHERE vehicle_id = ?"
+                : "UPDATE vehicles SET is_archived = FALSE, archived_at = NULL WHERE vehicle_id = ?";
+        try (Connection conn = connectionManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, vehicleId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    @Override
+    public boolean hasActiveBookings(long vehicleId) throws Exception {
+        return bookingExists(vehicleId, "AND status IN ('AWAITING_PAYMENT','CONFIRMED','ONGOING')");
+    }
+
+    @Override
+    public boolean hasAnyBookings(long vehicleId) throws Exception {
+        return bookingExists(vehicleId, "");
+    }
+
+    private boolean bookingExists(long vehicleId, String extraCondition) throws Exception {
+        try (Connection conn = connectionManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                     "SELECT 1 FROM bookings WHERE vehicle_id = ? " + extraCondition + " LIMIT 1")) {
+            ps.setLong(1, vehicleId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
     private Vehicle mapRow(ResultSet rs) throws SQLException {
         Vehicle v = new Vehicle();
         v.setVehicleId(rs.getLong("vehicle_id"));
@@ -251,6 +285,11 @@ public class VehicleDAOImpl implements VehicleDAO {
             v.setFeatures(rs.getString("features"));
         } catch (SQLException ignored) {
             // Columns not present yet — run database/migration_vehicle_specs.sql. Page still works without them.
+        }
+        try {
+            v.setArchived(rs.getBoolean("is_archived"));
+        } catch (SQLException ignored) {
+            // Column not present yet — it is added automatically on startup (SchemaUpgradeListener).
         }
         try {
             v.setBookedToday(rs.getBoolean("booked_today"));

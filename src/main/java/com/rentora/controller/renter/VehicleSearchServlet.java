@@ -40,6 +40,12 @@ public class VehicleSearchServlet extends HttpServlet {
         try {
             List<Vehicle> results = vehicleService.search(filters);
             promotionService.applyActivePromotions(results);
+            if ("1".equals(req.getParameter("deals"))) {
+                // "On sale" view: only vehicles with an active promotion, biggest discount first
+                results = results.stream().filter(Vehicle::isHasPromotion)
+                        .sorted(java.util.Comparator.comparingInt(Vehicle::getDiscountPercent).reversed())
+                        .collect(java.util.stream.Collectors.toList());
+            }
             req.setAttribute("vehicles", results);
         } catch (Exception e) {
             e.printStackTrace();

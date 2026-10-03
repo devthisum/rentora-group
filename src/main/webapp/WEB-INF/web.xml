@@ -17,6 +17,15 @@
         </cookie-config>
     </session-config>
 
+    <!-- Read every JSP as UTF-8. Fragments that only have a taglib directive (footer, navbar,
+         admin sidebar) otherwise default to ISO-8859-1, which turns "—" into "â€"". -->
+    <jsp-config>
+        <jsp-property-group>
+            <url-pattern>*.jsp</url-pattern>
+            <page-encoding>UTF-8</page-encoding>
+        </jsp-property-group>
+    </jsp-config>
+
     <error-page>
         <error-code>404</error-code>
         <location>/WEB-INF/views/common/error-404.jsp</location>

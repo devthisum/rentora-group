@@ -29,7 +29,16 @@ public class AdminVehicleServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            req.setAttribute("vehicles", vehicleService.getAll());
+            java.util.List<com.rentora.model.Vehicle> all = vehicleService.getAll();
+            String view = req.getParameter("view");
+            if (!"archived".equals(view) && !"all".equals(view)) view = "active";
+            final String selected = view;
+            long archivedCount = all.stream().filter(com.rentora.model.Vehicle::isArchived).count();
+            req.setAttribute("vehicles", all.stream().filter(v ->
+                    "all".equals(selected) || ("archived".equals(selected) == v.isArchived())).toList());
+            req.setAttribute("view", selected);
+            req.setAttribute("archivedCount", archivedCount);
+            req.setAttribute("activeCount", all.size() - archivedCount);
         } catch (Exception e) {
             req.setAttribute("errorMessage", "Could not load vehicles.");
         }

@@ -31,7 +31,7 @@ public class BookingPromotionServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             req.setAttribute("promotions", promotionService.getAll());
-            req.setAttribute("vehicles", vehicleService.getAll());
+            req.setAttribute("vehicles", vehicleService.getAllActive());
         } catch (Exception e) {
             e.printStackTrace();
             req.setAttribute("errorMessage", "Could not load promotions.");
@@ -47,7 +47,7 @@ public class BookingPromotionServlet extends HttpServlet {
 
         try {
             switch (action == null ? "" : action) {
-                case "create" -> promotionService.createPromotion(
+                case "create" -> sharedPromotionService().createPromotion(
                         Long.parseLong(req.getParameter("vehicleId")),
                         req.getParameter("title"),
                         req.getParameter("description"),
@@ -77,5 +77,11 @@ public class BookingPromotionServlet extends HttpServlet {
             resp.sendRedirect(req.getContextPath() + "/booking/promotions?error=" +
                     java.net.URLEncoder.encode(e.getMessage() != null ? e.getMessage() : "Something went wrong.", "UTF-8"));
         }
+    }
+
+    /** The app-wide PromotionService wired to the Observer subject, so creating a deal alerts wishlisters. */
+    private PromotionService sharedPromotionService() {
+        PromotionService shared = (PromotionService) getServletContext().getAttribute("promotionService");
+        return shared != null ? shared : promotionService;
     }
 }

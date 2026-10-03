@@ -66,7 +66,7 @@ public class WishlistDAOImpl implements WishlistDAO {
                 "FROM wishlist w " +
                 "JOIN vehicles v ON w.vehicle_id = v.vehicle_id " +
                 "JOIN vehicle_categories c ON v.category_id = c.category_id " +
-                "WHERE w.renter_id = ? ORDER BY " + orderClause;
+                "WHERE w.renter_id = ? AND v.is_archived = FALSE ORDER BY " + orderClause;
 
         List<Vehicle> results = new ArrayList<>();
         try (Connection conn = connectionManager.getConnection();
@@ -106,6 +106,19 @@ public class WishlistDAOImpl implements WishlistDAO {
             ps.setLong(1, renterId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) ids.add(rs.getLong("vehicle_id"));
+            }
+        }
+        return ids;
+    }
+
+    @Override
+    public java.util.List<Long> findRenterIdsByVehicle(long vehicleId) throws Exception {
+        java.util.List<Long> ids = new ArrayList<>();
+        try (Connection conn = connectionManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement("SELECT renter_id FROM wishlist WHERE vehicle_id = ?")) {
+            ps.setLong(1, vehicleId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) ids.add(rs.getLong(1));
             }
         }
         return ids;

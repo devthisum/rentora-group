@@ -1377,3 +1377,117 @@ a:hover .badge, button:hover .badge { transform: scale(1.05); }
   transition: background-size var(--t);
 }
 .prose a:hover, .inquiry-body a:hover, .announcement-body a:hover { background-size: 100% 1.5px; }
+
+
+/* ── Vehicle archive: view tabs + badge ── */
+.vehicle-view-tabs { display: inline-flex; gap: .25rem; padding: .25rem; background: var(--bg2); border: 1px solid var(--line); border-radius: 999px; }
+.vehicle-view-tab { padding: .4rem 1rem; border-radius: 999px; font-size: .88rem; font-weight: 500; color: var(--ink3); text-decoration: none; transition: var(--t); }
+.vehicle-view-tab:hover { color: var(--ink); }
+.vehicle-view-tab.active { background: var(--accent); color: #fff; }
+.vehicle-view-tab .count { margin-left: .3rem; padding: 0 .45rem; border-radius: 999px; font-size: .75rem; background: rgba(127,127,127,.18); }
+.vehicle-view-tab.active .count { background: rgba(255,255,255,.28); }
+.badge-archived { background: var(--bg3); color: var(--ink3); }
+
+/* ── Admin reports ── */
+.report-range { display: inline-flex; gap: .2rem; padding: .22rem; background: var(--bg2); border: 1px solid var(--line); border-radius: 999px; }
+.report-range-btn { padding: .38rem .9rem; border-radius: 999px; font-size: .85rem; font-weight: 500; color: var(--ink3); text-decoration: none; transition: var(--t); }
+.report-range-btn:hover { color: var(--ink); }
+.report-range-btn.active { background: var(--accent); color: #fff; }
+.report-chart { position: relative; height: 280px; }
+.report-sub { font-size: .95rem; font-weight: 500; color: var(--ink4); }
+.report-bar { height: 8px; border-radius: 999px; background: var(--bg3); overflow: hidden; margin-bottom: .25rem; }
+.report-bar-fill { height: 100%; border-radius: 999px; background: var(--accent); }
+
+
+/* ════════════════════════════════════════════
+   DARK MODE — Bootstrap bridge & contrast fixes
+   Bootstrap components read --bs-* variables; point them at the Rentora palette
+   so dropdowns, tables, list groups, pagination, accordions etc. match the theme.
+   ════════════════════════════════════════════ */
+[data-theme="dark"] {
+  --bs-body-bg: var(--bg);
+  --bs-body-color: var(--ink2);
+  --bs-emphasis-color: var(--ink);
+  --bs-secondary-color: var(--ink3);
+  --bs-tertiary-color: var(--ink4);
+  --bs-secondary-bg: var(--bg2);
+  --bs-tertiary-bg: var(--bg2);
+  --bs-border-color: var(--line2);
+  --bs-secondary-rgb: 169, 194, 186;   /* .text-secondary / .text-muted: readable on the dark green */
+  color-scheme: dark;                  /* native scrollbars, date pickers, select lists */
+}
+[data-theme="dark"] .text-secondary,
+[data-theme="dark"] .text-muted { color: var(--ink3) !important; }
+
+/* Alerts: the light-mode text colours are too dim on the dark surface */
+[data-theme="dark"] .alert-danger  { background: rgba(224,40,40,.16);  border-color: rgba(248,113,113,.45); color: #fca5a5; }
+[data-theme="dark"] .alert-success { color: #6ee7b7; border-color: rgba(52,211,153,.4); }
+[data-theme="dark"] .alert-info    { background: rgba(59,130,246,.16); border-color: rgba(96,165,250,.45); color: #93c5fd; }
+[data-theme="dark"] .alert-warning { color: #fcd34d; border-color: rgba(251,191,36,.4); }
+[data-theme="dark"] .profile-dropdown-menu .dropdown-item-danger,
+[data-theme="dark"] .profile-dropdown-menu .dropdown-item-danger i { color: #f87171; }
+
+/* Native <select> option lists and form controls */
+[data-theme="dark"] select option { background: var(--bg2); color: var(--ink); }
+[data-theme="dark"] .form-control, [data-theme="dark"] .form-select {
+  background-color: var(--bg2); color: var(--ink); border-color: var(--line2);
+}
+[data-theme="dark"] .form-control::placeholder { color: var(--ink4); }
+
+/* Bootstrap components that otherwise stay white */
+[data-theme="dark"] .dropdown-menu { background: var(--bg2); border-color: var(--line2); }
+[data-theme="dark"] .dropdown-item { color: var(--ink2); }
+[data-theme="dark"] .dropdown-item:hover, [data-theme="dark"] .dropdown-item:focus { background: var(--bg3); color: var(--ink); }
+[data-theme="dark"] .list-group-item { background: var(--bg2); color: var(--ink2); border-color: var(--line2); }
+[data-theme="dark"] .page-link { background: var(--bg2); color: var(--ink2); border-color: var(--line2); }
+[data-theme="dark"] .page-item.active .page-link { background: var(--accent); border-color: var(--accent); color: #fff; }
+[data-theme="dark"] .accordion-item, [data-theme="dark"] .accordion-button { background: var(--bg2); color: var(--ink); border-color: var(--line2); }
+[data-theme="dark"] .accordion-button:not(.collapsed) { background: var(--bg3); color: var(--ink); }
+[data-theme="dark"] .accordion-button::after { filter: invert(1) grayscale(1); }
+[data-theme="dark"] hr { border-color: var(--line2); opacity: 1; }
+
+/* Archived badge and view tabs need a touch more contrast on dark */
+[data-theme="dark"] .badge-archived { background: var(--bg3); color: var(--ink2); }
+[data-theme="dark"] .vehicle-view-tabs, [data-theme="dark"] .report-range { background: var(--bg2); border-color: var(--line2); }
+
+/* ════════════════════════════════════════════
+   PROMOTIONS — ribbon, countdown, price block, deal highlight
+   ════════════════════════════════════════════ */
+.promo-ribbon {
+  position: absolute; top: 12px; left: 0; z-index: 3;
+  background: var(--accent); color: #fff; font-size: .74rem; font-weight: 700; letter-spacing: .2px;
+  padding: 5px 12px 5px 10px; border-radius: 0 8px 8px 0; box-shadow: var(--shadow-sm);
+}
+.vehicle-img .promo-ribbon { top: 46px; }                                   /* sits under the category badge */
+.fleet-row-media.has-promo .vehicle-card-v2-badge { top: 46px; }            /* status badge steps below the ribbon */
+.promo-countdown {
+  position: absolute; left: 10px; bottom: 10px; z-index: 3;
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(255,255,255,.95); color: var(--ink2); border: 1px solid var(--line);
+  border-radius: 8px; padding: 3px 9px; font-size: .72rem; font-weight: 600; backdrop-filter: blur(8px);
+}
+.promo-countdown.hot { background: rgba(224,40,40,.12); border-color: rgba(224,40,40,.45); color: var(--red); }
+.promo-countdown-inline { position: static; display: inline-flex; margin-top: .5rem; }
+[data-theme="dark"] .promo-countdown { background: rgba(15,17,23,.88); color: var(--ink); border-color: rgba(255,255,255,.16); }
+[data-theme="dark"] .promo-countdown.hot { background: rgba(224,40,40,.28); border-color: rgba(248,113,113,.5); color: #fca5a5; }
+
+.vehicle-card.deal, .fleet-row.deal { box-shadow: 0 0 0 1.5px var(--accent), var(--shadow); }
+
+.promo-price-old { text-decoration: line-through; color: var(--ink4); font-size: .82rem; font-weight: 400; }
+.promo-price-new { font-family: var(--font-serif); font-weight: 700; font-size: 1.2rem; color: var(--accent); }
+.promo-price-regular { font-family: var(--font-serif); font-weight: 700; font-size: 1.2rem; color: var(--accent); }
+.promo-price-unit { color: var(--ink4); font-size: .7rem; font-weight: 500; }
+.promo-save { font-size: .72rem; font-weight: 600; color: var(--green); margin-top: 2px; }
+[data-theme="dark"] .promo-save { color: #6ee7b7; }
+
+.promo-banner {
+  background: var(--accent-l); border: 1px solid var(--accent); border-radius: var(--r);
+  padding: .8rem 1rem; margin-bottom: 1rem;
+}
+.promo-banner-title { font-weight: 700; color: var(--accent2); }
+[data-theme="dark"] .promo-banner-title { color: var(--accent); }
+.promo-banner p { margin: .2rem 0 0; font-size: .85rem; color: var(--ink3); }
+
+.hot-deals-section .hot-deals-flame { color: var(--accent); }
+.filter-btn-deals { border-color: var(--accent) !important; color: var(--accent) !important; }
+.filter-btn-deals.active { background: var(--accent) !important; color: #fff !important; }

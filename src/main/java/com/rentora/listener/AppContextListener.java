@@ -7,6 +7,7 @@ import com.rentora.service.BookingService;
 import com.rentora.service.InquiryService;
 import com.rentora.service.MaintenanceService;
 import com.rentora.service.PaymentService;
+import com.rentora.service.PromotionService;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
@@ -36,12 +37,14 @@ public class AppContextListener implements ServletContextListener {
         InquiryService inquiryService = new InquiryService(subject);
         PaymentService paymentService = new PaymentService(subject);
         MaintenanceService maintenanceService = new MaintenanceService(subject);
+        PromotionService promotionService = new PromotionService(subject);
 
         sce.getServletContext().setAttribute("notificationSubject", subject);
         sce.getServletContext().setAttribute("bookingService", bookingService);
         sce.getServletContext().setAttribute("inquiryService", inquiryService);
         sce.getServletContext().setAttribute("paymentService", paymentService);
         sce.getServletContext().setAttribute("maintenanceService", maintenanceService);
+        sce.getServletContext().setAttribute("promotionService", promotionService);
 
         // Every 60s, cancel any booking that's been sitting AWAITING_PAYMENT
         // for more than 10 minutes, freeing those dates back up for others.
