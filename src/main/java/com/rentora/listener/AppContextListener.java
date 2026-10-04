@@ -39,6 +39,8 @@ public class AppContextListener implements ServletContextListener {
         MaintenanceService maintenanceService = new MaintenanceService(subject);
         PromotionService promotionService = new PromotionService(subject);
 
+        // Changes on every server start; appended to CSS/JS URLs so browsers fetch fresh copies after a redeploy.
+        sce.getServletContext().setAttribute("assetVersion", System.currentTimeMillis());
         sce.getServletContext().setAttribute("notificationSubject", subject);
         sce.getServletContext().setAttribute("bookingService", bookingService);
         sce.getServletContext().setAttribute("inquiryService", inquiryService);

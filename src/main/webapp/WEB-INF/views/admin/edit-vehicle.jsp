@@ -156,7 +156,7 @@
     </c:if>
   </section>
 
-  <script src="${pageContext.request.contextPath}/assets/js/vehicle-brands.js"></script>
+  <script src="${pageContext.request.contextPath}/assets/js/vehicle-brands.js?v=${assetVersion}"></script>
   <script>
 
     const galleryFiles = document.getElementById('galleryFiles');

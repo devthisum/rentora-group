@@ -26,35 +26,21 @@ public class VehicleService {
      * but any value the admin explicitly provided on the form takes precedence.
      * New vehicles are AVAILABLE immediately.
      */
-    public long addVehicle(Vehicle input, long addedByAdminId) throws Exception {
+    public long addVehicle(Vehicle vehicle, long addedByAdminId) throws Exception {
 
-        if (!ValidationUtil.isValidVehicleNumber(input.getVehicleNumber())) {
+        if (!ValidationUtil.isValidVehicleNumber(vehicle.getVehicleNumber())) {
             throw new ValidationException("Invalid vehicle number format. Expected e.g. ABC-1234.");
         }
-        if (!ValidationUtil.isValidPrice(input.getPricePerDay().doubleValue())) {
+        if (!ValidationUtil.isValidPrice(vehicle.getPricePerDay().doubleValue())) {
             throw new ValidationException("Price per day must be a positive, realistic amount.");
         }
-        if (vehicleDAO.existsByVehicleNumber(input.getVehicleNumber())) {
+        if (vehicleDAO.existsByVehicleNumber(vehicle.getVehicleNumber())) {
             throw new ValidationException("A vehicle with this number is already registered.");
         }
 
-        // Factory Pattern: category-aware defaults (seats, transmission, fuel type)
-        Vehicle vehicle = VehicleFactory.createVehicle(input.getCategoryName());
+        // The vehicle arrives fully assembled by VehicleBuilder (Builder + Factory patterns), so every
+        // field the admin entered is kept. This service only enforces the business rules above.
         vehicle.setAddedBy(addedByAdminId);
-        vehicle.setCategoryId(input.getCategoryId());
-        vehicle.setVehicleNumber(input.getVehicleNumber());
-        vehicle.setBrand(input.getBrand());
-        vehicle.setModel(input.getModel());
-        vehicle.setYear(input.getYear());
-        vehicle.setPricePerDay(input.getPricePerDay());
-        vehicle.setDescription(input.getDescription());
-        vehicle.setImageUrl(input.getImageUrl());
-
-        // Admin-specified values override the factory defaults when provided
-        if (input.getSeats() > 0) vehicle.setSeats(input.getSeats());
-        if (ValidationUtil.isNotBlank(input.getTransmission())) vehicle.setTransmission(input.getTransmission());
-        if (ValidationUtil.isNotBlank(input.getFuelType())) vehicle.setFuelType(input.getFuelType());
-
         return vehicleDAO.create(vehicle);
     }
 

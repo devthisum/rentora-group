@@ -10,6 +10,29 @@
 
   <style>
     .browse-wrap { max-width: 1180px; margin: 0 auto; padding: 7rem 1rem 4rem; }
+
+    /* Sort + compare (kept inline so this page never depends on a stale cached stylesheet) */
+    .sort-select { min-width: 190px; padding-top: .45rem; padding-bottom: .45rem; font-size: .88rem; }
+    .compare-toggle { position: relative; display: inline-flex; cursor: pointer; margin-top: .75rem; user-select: none; }
+    .compare-toggle input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+    .compare-toggle span { display: inline-flex; align-items: center; gap: .4rem; padding: .38rem .95rem; border: 1.5px solid var(--line2); border-radius: 999px; background: var(--bg); color: var(--ink3); font-size: .8rem; font-weight: 600; transition: all .2s ease; }
+    .compare-toggle:hover span { border-color: var(--accent); color: var(--accent); }
+    .compare-toggle .ct-on { display: none; }
+    .compare-toggle input:checked ~ .ct-off { display: none; }
+    .compare-toggle input:checked ~ .ct-on { display: inline-flex; background: var(--accent); border-color: var(--accent); color: #fff; }
+    .compare-toggle input:focus-visible ~ span { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    .compare-bar { position: fixed; left: 50%; transform: translateX(-50%); bottom: 1rem; width: min(980px, calc(100% - 2rem)); z-index: 1040; padding: .7rem .9rem; background: var(--bg); border: 1px solid var(--line2); border-radius: 18px; box-shadow: 0 12px 40px rgba(0,0,0,.2); }
+    .compare-bar[hidden] { display: none; }
+    .compare-bar-inner { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; }
+    .compare-bar-items { display: flex; gap: .5rem; flex-wrap: wrap; flex: 1 1 auto; min-width: 0; }
+    .compare-chip { display: inline-flex; align-items: center; gap: .15rem; padding: .3rem .35rem .3rem .8rem; border-radius: 999px; background: var(--accent-l); border: 1px solid var(--accent); color: var(--ink); font-size: .82rem; font-weight: 600; }
+    .compare-chip button { border: 0; background: transparent; color: var(--ink3); font-size: 1.15rem; line-height: 1; padding: 0 .4rem; cursor: pointer; }
+    .compare-chip button:hover { color: var(--red); }
+    .compare-bar-hint { font-size: .8rem; color: var(--ink3); white-space: nowrap; }
+    .compare-bar .btn.disabled { opacity: .5; pointer-events: none; }
+    body:has(.compare-bar:not([hidden])) { padding-bottom: 96px; }
+    [data-theme="dark"] .compare-chip { background: rgba(252,125,20,.16); }
   </style>
 
   <div class="browse-wrap">
@@ -140,7 +163,7 @@
                   <span><i class="fa-solid fa-user"></i>${v.seats} seats</span>
                   <c:if test="${not empty v.mileage}"><span><i class="fa-solid fa-road"></i>${v.mileage} km</span></c:if>
                 </div>
-                <label class="compare-toggle mt-2"><input type="checkbox" class="compare-check" data-id="${v.vehicleId}" data-name="${v.brand} ${v.model}"><span><i class="fa-solid fa-code-compare me-1"></i>Compare</span></label>
+                <label class="compare-toggle"><input type="checkbox" class="compare-check" data-id="${v.vehicleId}" data-name="${v.brand} ${v.model}" aria-label="Add ${v.brand} ${v.model} to comparison"><span class="ct-off"><i class="fa-solid fa-plus"></i>Compare</span><span class="ct-on"><i class="fa-solid fa-check"></i>Added</span></label>
                 <div class="d-flex gap-2 mt-2">
                   <a href="${pageContext.request.contextPath}/vehicle-details?id=${v.vehicleId}" class="btn btn-outline-glass flex-fill">Details</a>
                   <a href="${pageContext.request.contextPath}/vehicle-details?id=${v.vehicleId}" class="btn btn-gradient flex-fill">Book Now</a>
@@ -166,6 +189,6 @@
 
   <jsp:include page="/WEB-INF/views/common/footer.jsp" />
   <script>window.RENTORA_CTX = '${pageContext.request.contextPath}';</script>
-  <script src="${pageContext.request.contextPath}/assets/js/compare.js"></script>
+  <script src="${pageContext.request.contextPath}/assets/js/compare.js?v=${assetVersion}"></script>
 </body>
 </html>

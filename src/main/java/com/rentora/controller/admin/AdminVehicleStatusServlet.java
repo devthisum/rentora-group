@@ -26,6 +26,10 @@ import java.io.IOException;
 @WebServlet({"/admin/vehicles/status", "/maintenance/vehicles/status"})
 public class AdminVehicleStatusServlet extends HttpServlet {
 
+    private final com.rentora.service.VehicleService vehicleService = new com.rentora.service.VehicleService();
+    private final com.rentora.command.AdminCommandInvoker invoker =
+            new com.rentora.command.AdminCommandInvoker(new com.rentora.service.AuditLogService());
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         boolean fromMaintenance = req.getServletPath().startsWith("/maintenance/");
@@ -42,7 +46,8 @@ public class AdminVehicleStatusServlet extends HttpServlet {
             if (estParam != null && !estParam.isBlank()) estimatedDays = Integer.parseInt(estParam);
             String notes = req.getParameter("notes");
 
-            maintenanceService.setVehicleStatus(vehicleId, status, estimatedDays, notes);
+            invoker.run(new com.rentora.command.ChangeVehicleStatusCommand(vehicleService, maintenanceService,
+                    vehicleId, status, estimatedDays, notes), (com.rentora.model.User) req.getSession().getAttribute("user"));
 
             req.getSession().setAttribute("successMessage",
                     ("CHECKING".equals(status) || "MAINTENANCE".equals(status))

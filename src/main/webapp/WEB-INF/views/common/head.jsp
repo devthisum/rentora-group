@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
 
 <!-- Rentora theme -->
-<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css?v=${assetVersion}">
 
 <script>
   window.CONTEXT_PATH = '${pageContext.request.contextPath}';

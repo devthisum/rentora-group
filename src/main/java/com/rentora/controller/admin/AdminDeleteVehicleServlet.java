@@ -13,12 +13,15 @@ import java.io.IOException;
 public class AdminDeleteVehicleServlet extends HttpServlet {
 
     private final VehicleService vehicleService = new VehicleService();
+    private final com.rentora.command.AdminCommandInvoker invoker =
+            new com.rentora.command.AdminCommandInvoker(new com.rentora.service.AuditLogService());
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             long id = Long.parseLong(req.getParameter("vehicleId"));
-            vehicleService.deleteVehicle(id);
+            invoker.run(new com.rentora.command.DeleteVehicleCommand(vehicleService, id),
+                    (com.rentora.model.User) req.getSession().getAttribute("user"));
             req.getSession().setAttribute("successMessage", "Vehicle removed from stock.");
         } catch (com.rentora.exception.ValidationException ve) {
             req.getSession().setAttribute("errorMessage", ve.getMessage());

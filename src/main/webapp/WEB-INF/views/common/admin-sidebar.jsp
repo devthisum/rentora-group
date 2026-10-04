@@ -21,6 +21,10 @@
            class="admin-sidebar-link ${fn:contains(pageContext.request.requestURI, '/admin/reports') ? 'active' : ''}">
           <i class="fa-solid fa-chart-line"></i><span>Reports</span>
         </a>
+        <a href="${pageContext.request.contextPath}/admin/activity"
+           class="admin-sidebar-link ${fn:contains(pageContext.request.requestURI, '/admin/activity') ? 'active' : ''}">
+          <i class="fa-solid fa-clock-rotate-left"></i><span>Activity log</span>
+        </a>
         <a href="${pageContext.request.contextPath}/admin/vehicles"
            class="admin-sidebar-link ${fn:contains(pageContext.request.requestURI, '/admin/vehicles') ? 'active' : ''}">
           <i class="fa-solid fa-car"></i><span>Vehicles</span>

@@ -145,7 +145,7 @@
   </section>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="${pageContext.request.contextPath}/assets/js/vehicle-brands.js"></script>
+  <script src="${pageContext.request.contextPath}/assets/js/vehicle-brands.js?v=${assetVersion}"></script>
   <script>
     const categorySelect = document.getElementById('categorySelect');
     const categoryName = document.getElementById('categoryName');

@@ -3,6 +3,8 @@ package com.rentora.controller.admin;
 import com.rentora.exception.ValidationException;
 import com.rentora.model.User;
 import com.rentora.model.Vehicle;
+import com.rentora.builder.VehicleBuilder;
+import com.rentora.service.AuditLogService;
 import com.rentora.service.VehicleImageService;
 import com.rentora.service.VehicleService;
 import com.rentora.util.ImageUploadUtil;
@@ -25,6 +27,7 @@ public class AdminVehicleServlet extends HttpServlet {
 
     private final VehicleService vehicleService = new VehicleService();
     private final VehicleImageService imageService = new VehicleImageService();
+    private final AuditLogService auditLogService = new AuditLogService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -51,31 +54,28 @@ public class AdminVehicleServlet extends HttpServlet {
         User admin = (User) session.getAttribute("user");
 
         try {
-            Vehicle vehicle = new Vehicle();
-            vehicle.setCategoryId(Integer.parseInt(req.getParameter("categoryId")));
-            vehicle.setCategoryName(req.getParameter("categoryName"));
-            vehicle.setVehicleNumber(req.getParameter("vehicleNumber"));
-            vehicle.setBrand(req.getParameter("brand"));
-            vehicle.setModel(req.getParameter("model"));
-            vehicle.setYear(Integer.parseInt(req.getParameter("year")));
-            String seatsParam = req.getParameter("seats");
-            if (seatsParam != null && !seatsParam.isBlank()) vehicle.setSeats(Integer.parseInt(seatsParam));
-            vehicle.setTransmission(req.getParameter("transmission"));
-            vehicle.setFuelType(req.getParameter("fuelType"));
-            vehicle.setPricePerDay(new BigDecimal(req.getParameter("pricePerDay")));
-            vehicle.setDescription(req.getParameter("description"));
-
-            String doorsParam = req.getParameter("doors");
-            if (doorsParam != null && !doorsParam.isBlank()) vehicle.setDoors(Integer.parseInt(doorsParam));
-            vehicle.setAirConditioner(req.getParameter("airConditioner"));
-            String mileageParam = req.getParameter("mileage");
-            if (mileageParam != null && !mileageParam.isBlank()) vehicle.setMileage(Integer.parseInt(mileageParam));
-            vehicle.setFeatures(req.getParameter("features"));
+            // Builder pattern: assemble the vehicle step by step; each step converts and checks its own value,
+            // and the Factory supplies category defaults for anything left blank.
+            VehicleBuilder builder = VehicleBuilder.forNewVehicle(req.getParameter("categoryName"))
+                    .categoryId(req.getParameter("categoryId"))
+                    .vehicleNumber(req.getParameter("vehicleNumber"))
+                    .brand(req.getParameter("brand"))
+                    .model(req.getParameter("model"))
+                    .year(req.getParameter("year"))
+                    .seats(req.getParameter("seats"))
+                    .transmission(req.getParameter("transmission"))
+                    .fuelType(req.getParameter("fuelType"))
+                    .pricePerDay(req.getParameter("pricePerDay"))
+                    .description(req.getParameter("description"))
+                    .doors(req.getParameter("doors"))
+                    .airConditioner(req.getParameter("airConditioner"))
+                    .mileage(req.getParameter("mileage"))
+                    .features(req.getParameter("features"));
 
             // A chosen gallery photo takes priority over a pasted URL.
             Part filePart = req.getPart("imageFile");
             String uploadedUrl = ImageUploadUtil.saveIfPresent(filePart, getServletContext(), req.getContextPath(), "vehicles");
-            vehicle.setImageUrl(uploadedUrl != null ? uploadedUrl : req.getParameter("imageUrl"));
+            Vehicle vehicle = builder.imageUrl(uploadedUrl != null ? uploadedUrl : req.getParameter("imageUrl")).build();
 
             // Collect gallery photos first so a too-long list is rejected BEFORE the vehicle is created.
             java.util.List<String> extras = new java.util.ArrayList<>(
@@ -91,6 +91,8 @@ public class AdminVehicleServlet extends HttpServlet {
             // Gallery: cover becomes the primary row, then the extra photos.
             imageService.syncPrimary(vehicleId, vehicle.getImageUrl());
             imageService.addExtraImages(vehicleId, extras);
+            auditLogService.record(admin, "VEHICLE_CREATED", "vehicle", vehicleId,
+                    vehicle.getBrand() + " " + vehicle.getModel() + " (" + vehicle.getVehicleNumber() + ") added to stock");
             req.getSession().setAttribute("successMessage", "Vehicle added to the shop's stock.");
             resp.sendRedirect(req.getContextPath() + "/admin/vehicles");
 

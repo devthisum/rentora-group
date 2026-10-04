@@ -2,6 +2,9 @@ package com.rentora.controller.admin;
 
 import com.rentora.exception.ValidationException;
 import com.rentora.model.Vehicle;
+import com.rentora.builder.VehicleBuilder;
+import com.rentora.model.User;
+import com.rentora.service.AuditLogService;
 import com.rentora.service.VehicleImageService;
 import com.rentora.service.VehicleService;
 import com.rentora.util.ImageUploadUtil;
@@ -24,6 +27,7 @@ public class AdminEditVehicleServlet extends HttpServlet {
 
     private final VehicleService vehicleService = new VehicleService();
     private final VehicleImageService imageService = new VehicleImageService();
+    private final AuditLogService auditLogService = new AuditLogService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -45,30 +49,26 @@ public class AdminEditVehicleServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            Vehicle changes = new Vehicle();
-            changes.setVehicleId(Long.parseLong(req.getParameter("vehicleId")));
-            changes.setBrand(req.getParameter("brand"));
-            changes.setModel(req.getParameter("model"));
-            changes.setYear(Integer.parseInt(req.getParameter("year")));
-            String seatsParam = req.getParameter("seats");
-            if (seatsParam != null && !seatsParam.isBlank()) changes.setSeats(Integer.parseInt(seatsParam));
-            changes.setTransmission(req.getParameter("transmission"));
-            changes.setFuelType(req.getParameter("fuelType"));
-            changes.setPricePerDay(new BigDecimal(req.getParameter("pricePerDay")));
-            changes.setDescription(req.getParameter("description"));
-
-            String doorsParam = req.getParameter("doors");
-            if (doorsParam != null && !doorsParam.isBlank()) changes.setDoors(Integer.parseInt(doorsParam));
-            changes.setAirConditioner(req.getParameter("airConditioner"));
-            String mileageParam = req.getParameter("mileage");
-            if (mileageParam != null && !mileageParam.isBlank()) changes.setMileage(Integer.parseInt(mileageParam));
-            changes.setFeatures(req.getParameter("features"));
+            // Builder pattern (same builder as Add Vehicle, started from the existing vehicle's id)
+            VehicleBuilder builder = VehicleBuilder.forExistingVehicle(req.getParameter("vehicleId"))
+                    .brand(req.getParameter("brand"))
+                    .model(req.getParameter("model"))
+                    .year(req.getParameter("year"))
+                    .seats(req.getParameter("seats"))
+                    .transmission(req.getParameter("transmission"))
+                    .fuelType(req.getParameter("fuelType"))
+                    .pricePerDay(req.getParameter("pricePerDay"))
+                    .description(req.getParameter("description"))
+                    .doors(req.getParameter("doors"))
+                    .airConditioner(req.getParameter("airConditioner"))
+                    .mileage(req.getParameter("mileage"))
+                    .features(req.getParameter("features"));
 
             // A newly chosen photo replaces the current one; otherwise fall back to the
             // (possibly unchanged) Image URL field so the existing photo isn't wiped out.
             Part filePart = req.getPart("imageFile");
             String uploadedUrl = ImageUploadUtil.saveIfPresent(filePart, getServletContext(), req.getContextPath(), "vehicles");
-            changes.setImageUrl(uploadedUrl != null ? uploadedUrl : req.getParameter("imageUrl"));
+            Vehicle changes = builder.imageUrl(uploadedUrl != null ? uploadedUrl : req.getParameter("imageUrl")).build();
 
             vehicleService.updateVehicle(changes);
 
@@ -80,6 +80,8 @@ public class AdminEditVehicleServlet extends HttpServlet {
                     ImageUploadUtil.saveAll(req.getParts(), "galleryFiles", getServletContext(), req.getContextPath(), "vehicles"));
             extras.addAll(VehicleImageService.parseUrls(req.getParameter("extraImageUrls")));
             imageService.addExtraImages(vid, extras);
+            auditLogService.record((User) req.getSession().getAttribute("user"), "VEHICLE_UPDATED", "vehicle", vid,
+                    changes.getBrand() + " " + changes.getModel() + " details updated");
             req.getSession().setAttribute("successMessage", "Vehicle updated.");
             resp.sendRedirect(req.getContextPath() + "/admin/vehicles");
 

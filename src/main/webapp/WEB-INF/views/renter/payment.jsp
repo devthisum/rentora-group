@@ -135,7 +135,7 @@
   <jsp:include page="/WEB-INF/views/common/footer.jsp" />
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="${pageContext.request.contextPath}/assets/js/card-validation.js"></script>
+  <script src="${pageContext.request.contextPath}/assets/js/card-validation.js?v=${assetVersion}"></script>
   <script>
     document.getElementById('payCard').addEventListener('change', toggleFields);
     document.getElementById('payWallet').addEventListener('change', toggleFields);
